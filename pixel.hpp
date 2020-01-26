@@ -12,6 +12,21 @@ public:
     void setY(int argY);
     void modX(int argModX);
     void modY(int argModY);
+    void Rotate();
+    Pixel operator - (const Pixel& operand)
+    {
+        Pixel result = *this;
+        result.x -= operand.x;
+        result.y -= operand.y;
+        return result;
+    }
+    Pixel operator + (const Pixel& operand)
+    {
+        Pixel result = *this;
+        result.x += operand.x;
+        result.y += operand.y;
+        return result;
+    }
     ~Pixel();
 };
 Pixel::Pixel()
@@ -45,6 +60,12 @@ void Pixel::modX(int argModX)
 void Pixel::modY(int argModY)
 {
     y += argModY;
+}
+void Pixel::Rotate()
+{
+    int temp = x;
+    x = -y;
+    y = temp;
 }
 Pixel::~Pixel()
 {
