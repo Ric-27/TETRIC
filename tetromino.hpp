@@ -34,8 +34,8 @@ Tetromino::Tetromino(Pixel coorZero)
     active = true;
     pixels.resize(4);
     srand(time(NULL));    
-    int random = (rand()%7) + 1;
-    //random = 1;
+    int random = (rand()%8) + 1;
+    //random = 8;
     switch (random)
     {
     case 1: //o
@@ -51,7 +51,7 @@ Tetromino::Tetromino(Pixel coorZero)
         pixels[3].setX(coorZero.getX() + 1);
         pixels[3].setY(coorZero.getY() + 1);
 
-        color = "231.76.60";
+        color = "17.141.117";
         break;
     case 2: //i
         pixels[0].setX(coorZero.getX());
@@ -130,19 +130,34 @@ Tetromino::Tetromino(Pixel coorZero)
         break;
     case 7: //t
         pixels[0].setX(coorZero.getX());
-        pixels[0].setY(coorZero.getY());
+        pixels[0].setY(coorZero.getY() + 1);
         
         pixels[1].setX(coorZero.getX() + 1);
-        pixels[1].setY(coorZero.getY());
+        pixels[1].setY(coorZero.getY() + 1);
         
         pixels[2].setX(coorZero.getX() - 1);
-        pixels[2].setY(coorZero.getY());
+        pixels[2].setY(coorZero.getY() + 1);
         
         pixels[3].setX(coorZero.getX());
-        pixels[3].setY(coorZero.getY() + 1);
+        pixels[3].setY(coorZero.getY());
 
         color = "21.67.96";
         break;
+    case 8: //.
+        pixels[0].setX(coorZero.getX());
+        pixels[0].setY(coorZero.getY());
+        
+        pixels[1].setX(coorZero.getX());
+        pixels[1].setY(coorZero.getY());
+        
+        pixels[2].setX(coorZero.getX());
+        pixels[2].setY(coorZero.getY());
+        
+        pixels[3].setX(coorZero.getX());
+        pixels[3].setY(coorZero.getY());
+
+        color = "255.255.255";
+        break;    
     }
 }
 std::vector<Pixel> Tetromino::getPixels()
