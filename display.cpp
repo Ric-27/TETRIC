@@ -6,34 +6,31 @@
 
 
 int const xSize = 10;
-int const ySize = 22;
-int counterGravityMax = 50;
+int const ySize = 24;
 int counterGravity = 0;
-int gameStatus = 0; //0 tittle screen,1 playing, 2 pause, 6 gameover
 
 const int pixel_factor = 30;
 
-const int window_width = 39;
-const int window_height = 22;
+const int window_width = 39; //39
+const int window_height = 22; //22
 
 int colorChanging = 0;
 bool colorAug = true;
 
 void DrawTitleScreen();
 void DrawGame(vector<string>);
+void DrawPlayers(vector<string>,int,vector<string>,int,vector<string>,int);
 void DrawNext(vector<string>);
 void DrawPoints(int, int, int);
-void DrawWindow();
+void DrawGameOver(int, int, int);
+void DrawBackground();
 void DrawPause();
 void ChangeColor();
 
-sf::RenderWindow window(sf::VideoMode(window_width * pixel_factor, window_height * pixel_factor), "RIC -- TETRIS");
+sf::RenderWindow window(sf::VideoMode(window_width * pixel_factor, window_height * pixel_factor), "TETRIC");
 
 int main()
-{
-   int rows = 0;
-   int score = 0;
-   int level = 0;   
+{  
    Logic game(xSize, ySize);
    while (window.isOpen())
    {
@@ -44,95 +41,99 @@ int main()
             window.close();
          if (event.type == sf::Event::KeyPressed)
          {
-            if (event.key.code == sf::Keyboard::S && gameStatus == 0)
+            switch (event.key.code)
             {
-               gameStatus = 1;
-            }
-            if (event.key.code == sf::Keyboard::P)
-            {
-               if (gameStatus == 1)
-               {
-                  gameStatus = 2;
-               } else if (gameStatus == 2) 
-               {
-                  gameStatus = 1;
-               }          
-            }
-            if (event.key.code == sf::Keyboard::Down && gameStatus == 1) //soft drop
-            {
-               game.moveTetromino('d');
-            }
-            if (event.key.code == sf::Keyboard::Right && gameStatus == 1) //move right
-            {
-               game.moveTetromino('r');
-            }
-            if (event.key.code == sf::Keyboard::Left && gameStatus == 1) //move left
-            {
-               game.moveTetromino('l');
-            }
-            if (event.key.code == sf::Keyboard::Up && gameStatus == 1) //turning clockwise
-            {
-               game.rotateTetromino();
-            }
-            if (event.key.code == sf::Keyboard::Q)
-            {
+            case sf::Keyboard::S: //Start Game
+               if (game.getStatus() == 0) game.setStatus(1);
+               break;
+            case sf::Keyboard::Q: //Quit
                return 0;
-            }        
+               break;
+            case sf::Keyboard::P: //Pause
+               if (game.getStatus() == 1)
+                  game.setStatus(2);
+               else if (game.getStatus() == 2) 
+                  game.setStatus(1);
+               break;
+            case sf::Keyboard::C: //Connection
+               /* code */
+               break;
+            case sf::Keyboard::R: //Restart
+               if (game.getStatus() == 3) game.CleanUp();              
+               break;
+            case sf::Keyboard::Up: // Rotate
+               game.rotateTetromino();
+               break;
+            case sf::Keyboard::Right: //Move Right
+               game.moveTetromino('r');
+               break;
+            case sf::Keyboard::Left: //Move Left
+               game.moveTetromino('l');
+               break;
+            case sf::Keyboard::Down: //SoftDrop
+               game.moveTetromino('d');
+               break;
+            case sf::Keyboard::Space: //HardDrop
+               game.ActivateHardDrop();
+               break;
+            default:
+               break;
+            }      
          }
-      }   
-      window.clear();
-      switch (gameStatus)
-      {
-      case 0:
-         DrawTitleScreen();
-         ChangeColor();
-         break;         
-
-      case 1:         
-         counterGravity++;
-         DrawWindow();
-         DrawGame(game.getMatrix());
-         DrawNext(game.getNext());
-         DrawPoints(score,rows,level);
-
-         if (counterGravity > counterGravityMax) 
-         {
-            counterGravity = 0;
-            game.moveTetromino('d');
-         }
-         
-         break;
-
-      case 2:
-         DrawWindow();
-         DrawGame(game.getMatrix());
-         DrawNext(game.getNext());
-         DrawPoints(score,rows,level);
-         DrawPause();
-         ChangeColor();
-         break;
       }
+      window.clear();      
+      switch (game.getStatus())
+      {
+         case 0:
+            DrawTitleScreen();
+            break;         
+
+         case 1:         
+            counterGravity++;
+            DrawBackground();
+            DrawGame(game.getMatrix());
+            DrawPlayers(game.getMatrix(),game.getScore(),game.getMatrix(),game.getScore(),game.getMatrix(),game.getScore());
+            DrawNext(game.getNext());
+            DrawPoints(game.getScore(),game.getRows(),game.getLevel());
+            if (counterGravity > game.GetSlowness()) 
+            {
+               counterGravity = 0;
+               game.moveTetromino('d');
+            }            
+            break;
+
+         case 2:
+            DrawBackground();
+            DrawGame(game.getMatrix());
+            DrawPlayers(game.getMatrix(),game.getScore(),game.getMatrix(),game.getScore(),game.getMatrix(),game.getScore());
+            DrawNext(game.getNext());
+            DrawPoints(game.getScore(),game.getRows(),game.getLevel());
+            DrawPause();
+            break;
+
+         case 3:
+            DrawGameOver(game.getScore(),game.getRows(),game.getLevel());
+            break;
+      }
+      
       window.display();      
    }
    return 0;
 }
 
 /////////////////////////////////////////////////////////
-void ChangeColor()
-{
+void ChangeColor(){
    if (colorAug)
    {
       colorChanging++;
-      colorAug = (colorChanging > 255) ? false : true;
+      colorAug = (colorChanging > 250) ? false : true;
    } else {
       colorChanging--;
-      colorAug = (colorChanging < 50) ? true : false;
-   }         
+         colorAug = (colorChanging < 10) ? true : false;
+   } 
 }
-
-
-void DrawPause()
-{
+void DrawPause(){
+   ChangeColor();
    sf::Font font;
    if (!font.loadFromFile("font.ttf"))
    {
@@ -146,17 +147,15 @@ void DrawPause()
    text.setPosition((window_width/2 * pixel_factor) - (15.5*pixel_factor), (4*pixel_factor));
    window.draw(text);
 }
-
-void DrawGame(vector<string> argMatrix)
-{
-   for (int j = 2; j < ySize; j++)
+void DrawGame(vector<string> argMatrix){
+   for (int j = 4; j < ySize; j++)
    {
       for (int i = 0; i < xSize; i++)
       {
          sf::RectangleShape pixel(sf::Vector2f(pixel_factor, pixel_factor));
          pixel.setOutlineThickness(-1.f);
          pixel.setOutlineColor(sf::Color(20,20,20,255));
-         pixel.setPosition((i + 1) *pixel_factor, (j - 1)*pixel_factor);
+         pixel.setPosition((i + 1) *pixel_factor, (j - 3)*pixel_factor);
          string k = argMatrix[i + xSize * j];
          if (k.length() > 0)
          {
@@ -166,9 +165,7 @@ void DrawGame(vector<string> argMatrix)
             short r = stoi(k.substr(0,posp1));
             short g = stoi(k.substr(posp1 + 1,  posp2 - posp1 - 1));
             short b = stoi(k.substr(posp2 + 1,  k.length() - posp2 - 1));
-            //cout << r << " " << g << " " << b << endl;
-            pixel.setFillColor(sf::Color(r,g,b,255));
-            //pixel.setFillColor(sf::Color(255,0,0,255));  
+            pixel.setFillColor(sf::Color(r,g,b,255));  
          } else {
             pixel.setFillColor(sf::Color::Black);
          }             
@@ -176,10 +173,125 @@ void DrawGame(vector<string> argMatrix)
       }        
    }
 }
+void DrawPlayers(vector<string> argMatrixP1,int argScoreP1,vector<string> argMatrixP2,int argScoreP2,vector<string> argMatrixP3,int argScoreP3){
+   int local_PF = pixel_factor / 2.5;
+   for (int j = 4; j < ySize; j++)
+   {
+      for (int i = 0; i < xSize; i++)
+      {
+         sf::RectangleShape pixel(sf::Vector2f(local_PF, local_PF));
+         pixel.setPosition(((i + 1) *local_PF)+20.6*pixel_factor, ((j - 4)*local_PF)+1*pixel_factor);
+         string k = argMatrixP1[i + xSize * j];
+         if (k.length() > 0)
+         {
+            int posp1 = k.find('.');
+            int posp2 = k.find('.',posp1 + 1);
+            
+            short r = stoi(k.substr(0,posp1));
+            short g = stoi(k.substr(posp1 + 1,  posp2 - posp1 - 1));
+            short b = stoi(k.substr(posp2 + 1,  k.length() - posp2 - 1));
+            pixel.setFillColor(sf::Color(r,g,b,255));
+         } else {
+            pixel.setFillColor(sf::Color::Black);
+         }             
+         window.draw(pixel);            
+      }        
+   }
+   for (int j = 4; j < ySize; j++)
+   {
+      for (int i = 0; i < xSize; i++)
+      {
+         sf::RectangleShape pixel(sf::Vector2f(local_PF, local_PF));
+         pixel.setPosition(((i + 1) *local_PF)+26.6*pixel_factor, ((j - 4)*local_PF)+1*pixel_factor);
+         string k = argMatrixP2[i + xSize * j];
+         if (k.length() > 0)
+         {
+            int posp1 = k.find('.');
+            int posp2 = k.find('.',posp1 + 1);
+            
+            short r = stoi(k.substr(0,posp1));
+            short g = stoi(k.substr(posp1 + 1,  posp2 - posp1 - 1));
+            short b = stoi(k.substr(posp2 + 1,  k.length() - posp2 - 1));
+            pixel.setFillColor(sf::Color(r,g,b,255)); 
+         } else {
+            pixel.setFillColor(sf::Color::Black);
+         }             
+         window.draw(pixel);            
+      }    
+   }
+   for (int j = 4; j < ySize; j++)
+   {
+      for (int i = 0; i < xSize; i++)
+      {
+         sf::RectangleShape pixel(sf::Vector2f(local_PF, local_PF));
+         pixel.setPosition(((i + 1) *local_PF)+32.6*pixel_factor, ((j - 4)*local_PF)+1*pixel_factor);
+         string k = argMatrixP3[i + xSize * j];
+         if (k.length() > 0)
+         {
+            int posp1 = k.find('.');
+            int posp2 = k.find('.',posp1 + 1);
+            
+            short r = stoi(k.substr(0,posp1));
+            short g = stoi(k.substr(posp1 + 1,  posp2 - posp1 - 1));
+            short b = stoi(k.substr(posp2 + 1,  k.length() - posp2 - 1));
+            pixel.setFillColor(sf::Color(r,g,b,255)); 
+         } else {
+            pixel.setFillColor(sf::Color::Black);
+         }             
+         window.draw(pixel);            
+      }        
+   }
 
-void DrawTitleScreen()
-{
-   //DrawWindow();   
+   sf::RectangleShape pixel(sf::Vector2f(4*pixel_factor, 2*pixel_factor));
+   pixel.setPosition(21*pixel_factor, 9*pixel_factor);
+   pixel.setFillColor(sf::Color(20,20,20,255));            
+   window.draw(pixel);
+
+   pixel.setPosition(27*pixel_factor, 9*pixel_factor);
+   pixel.setFillColor(sf::Color(20,20,20,255));            
+   window.draw(pixel);
+
+   pixel.setPosition(33*pixel_factor, 9*pixel_factor);
+   pixel.setFillColor(sf::Color(20,20,20,255));            
+   window.draw(pixel);
+
+   sf::Font font;
+   if (!font.loadFromFile("font.ttf"))
+   {
+      cout << "font load error..." << endl;
+   }
+   sf::Text text;
+   text.setFont(font);
+   text.setCharacterSize(local_PF * 2.5);
+   text.setFillColor(sf::Color::White);
+   string k;
+
+   text.setString("SCORE");   
+   text.setPosition(21.5*pixel_factor, 8.8 * pixel_factor);
+   window.draw(text);
+   k = to_string(argScoreP1);
+   text.setString(k);   
+   text.setPosition(21.1*pixel_factor, 9.8 * pixel_factor);
+   window.draw(text);
+
+   text.setString("SCORE");   
+   text.setPosition(27.5*pixel_factor, 8.8 * pixel_factor);
+   window.draw(text);
+   k = to_string(argScoreP1);
+   text.setString(k);   
+   text.setPosition(27.1*pixel_factor, 9.8 * pixel_factor);
+   window.draw(text);
+  
+   text.setString("SCORE");   
+   text.setPosition(33.5*pixel_factor, 8.8 * pixel_factor);
+   window.draw(text);
+   k = to_string(argScoreP1);
+   text.setString(k);   
+   text.setPosition(33.1*pixel_factor, 9.8 * pixel_factor);
+   window.draw(text);
+}
+void DrawTitleScreen(){
+   ChangeColor();   
    sf::Font font;
    if (!font.loadFromFile("font.ttf"))
    {
@@ -213,13 +325,50 @@ void DrawTitleScreen()
 
    text.setString("Press    S    to  play");
    text.setCharacterSize(pixel_factor*4);
-   text.setFillColor(sf::Color(colorChanging,colorChanging,colorChanging,255));
+   text.setFillColor(sf::Color(255,255,255,colorChanging));
    text.setPosition((3.9*pixel_factor),(17.2*pixel_factor));
    window.draw(text);
 }
+void DrawGameOver(int argScore, int argRows, int argLevel){
+   ChangeColor();   
+   sf::Font font;
+   if (!font.loadFromFile("font.ttf"))
+   {
+      cout << "font load error..." << endl;
+   }
+   sf::Text text;
+   text.setFont(font);
+   text.setString("GAME  OVER");
+   text.setCharacterSize(pixel_factor * 8);
+   text.setFillColor(sf::Color::White);
+   text.setPosition((0.5*pixel_factor), (-2*pixel_factor));
+   window.draw(text);
+   string k = to_string(argScore);
+   text.setString("SCORE  " + k);
+   text.setCharacterSize(pixel_factor*2);
+   text.setFillColor(sf::Color::White);
+   text.setPosition((13.5*pixel_factor), (8.5*pixel_factor));
+   window.draw(text);
+   k = to_string(argRows);
+   text.setString("ROWS  " + k);
+   text.setCharacterSize(pixel_factor*2);
+   text.setFillColor(sf::Color::White);
+   text.setPosition((13.5*pixel_factor),(10.5*pixel_factor));
+   window.draw(text);
+   k = to_string(argLevel);
+   text.setString("LEVEL  " + k);
+   text.setCharacterSize(pixel_factor*2);
+   text.setFillColor(sf::Color::White);
+   text.setPosition((13.5*pixel_factor),(12.5*pixel_factor));
+   window.draw(text);
 
-void DrawWindow()
-{
+   text.setString("Press    R    to  restart");
+   text.setCharacterSize(pixel_factor*4);
+   text.setFillColor(sf::Color(255,255,255,colorChanging));
+   text.setPosition((0.5*pixel_factor),(17.2*pixel_factor));
+   window.draw(text);
+}
+void DrawBackground(){
    for (int i = 0; i < window_width; i++)
    {
       for (int j = 0; j < window_height; j++)
@@ -232,10 +381,55 @@ void DrawWindow()
          window.draw(pixel);
       }      
    }
-}
+   sf::Font font;
+   if (!font.loadFromFile("font.ttf"))
+   {
+      cout << "font load error..." << endl;
+   }
+   sf::Text text;
+   text.setFont(font);
+   text.setCharacterSize(pixel_factor * 2.5);
+   text.setFillColor(sf::Color(200,200,200,255));
 
-void DrawNext(vector<string> argMatrix)
-{
+   text.setString("Press         to");   
+   text.setPosition((21*pixel_factor), (11*pixel_factor));
+   window.draw(text);
+
+   text.setCharacterSize(pixel_factor * 1.5);
+
+   text.setString("right                             move  right");   
+   text.setPosition((21*pixel_factor), (13.5*pixel_factor));
+   window.draw(text);
+
+   text.setString("left                                 move  left");   
+   text.setPosition((21*pixel_factor), (14.5*pixel_factor));
+   window.draw(text);
+
+   text.setString("up                                          rotate");   
+   text.setPosition((21*pixel_factor), (15.5*pixel_factor));
+   window.draw(text);
+
+   text.setString("down                                 soft drop");   
+   text.setPosition((21*pixel_factor), (16.5*pixel_factor));
+   window.draw(text);
+
+   text.setString("space                             hard drop");   
+   text.setPosition((21*pixel_factor), (17.5*pixel_factor));
+   window.draw(text);
+
+   text.setString("p                                              pause");   
+   text.setPosition((21*pixel_factor), (18.5*pixel_factor));
+   window.draw(text);
+
+   text.setString("c                                              connect");   
+   text.setPosition((21*pixel_factor), (19.5*pixel_factor));
+   window.draw(text);
+
+   text.setString("Q                                              quit");   
+   text.setPosition((21*pixel_factor), (20.5*pixel_factor));
+   window.draw(text);
+}
+void DrawNext(vector<string> argMatrix){
    sf::Font font;
    if (!font.loadFromFile("font.ttf"))
    {
@@ -263,7 +457,6 @@ void DrawNext(vector<string> argMatrix)
          pixel.setOutlineColor(sf::Color(20,20,20,255));
          pixel.setPosition((i + 2 + xSize) *pixel_factor, (j + 3)*pixel_factor);
          string k = argMatrix[i + 6 * j];
-         //cout << k << endl;
          if (k.length() > 0)
          {
             int posp1 = k.find('.');
@@ -272,9 +465,7 @@ void DrawNext(vector<string> argMatrix)
             short r = stoi(k.substr(0,posp1));
             short g = stoi(k.substr(posp1 + 1,  posp2 - posp1 - 1));
             short b = stoi(k.substr(posp2 + 1,  k.length() - posp2 - 1));
-            //cout << r << " " << g << " " << b << endl;
             pixel.setFillColor(sf::Color(r,g,b,255));
-            //pixel.setFillColor(sf::Color(255,0,0,255));  
          } else {
             pixel.setFillColor(sf::Color::Black);
          }             
@@ -282,9 +473,7 @@ void DrawNext(vector<string> argMatrix)
       }        
    }
 }
-
-void DrawPoints(int argScore, int argRows, int argLevel)
-{
+void DrawPoints(int argScore, int argRows, int argLevel){
    for (int i = 0; i < 6; i++)
    {
       sf::RectangleShape pixel(sf::Vector2f(pixel_factor, pixel_factor));
