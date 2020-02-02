@@ -22,12 +22,12 @@ Logic::Logic(int argX, int argY){
 
     status = 0;
 
-    Tetromino newPiece(coorZero);
+    Tetromino newPiece(coorZero,0);
     nextPiece = newPiece;
     newTetromino();
-    updateMatrix();
 }
 vector<string> Logic::getMatrix(){
+    updateMatrix();
     return colorMatrix;
 }
 vector<string> Logic::getNext(){
@@ -54,9 +54,10 @@ int Logic::getStatus(){
 void Logic::newTetromino(){
     activePiece = nextPiece;
     savedPos = activePiece.getPixels();
-    Tetromino newPiece(coorZero);
+    Tetromino newPiece(coorZero,nextPiece.GetId());
     nextPiece = newPiece;
     fillNextMatrix();
+    updateMatrix();
 }
 void Logic::fillNextMatrix(){
     vector<Pixel> positions = nextPiece.getPixels();
@@ -76,21 +77,33 @@ void Logic::fillNextMatrix(){
     }
 }
 void Logic::updateMatrix(){
+    Overlay();
     vector<Pixel> positions = activePiece.getPixels();
-    for (int i = 0; i < positions.size(); i++)
+    if(!locked)
+    {
+        for (int i = 0; i < prev_overlay.size(); i++)
+        {
+            colorMatrix[prev_overlay[i].getX() + logicX * prev_overlay[i].getY()] = "";
+        }    
+    }    
+    for (int i = 0; i < curr_overlay.size(); i++)
+    {
+        colorMatrix[curr_overlay[i].getX() + logicX * curr_overlay[i].getY()] = "80.80.80";
+    }
+    for (int i = 0; i < savedPos.size(); i++)
     {
         colorMatrix[savedPos[i].getX() + logicX * savedPos[i].getY()] = "";
     }
     for (int i = 0; i < positions.size(); i++)
     {
         colorMatrix[positions[i].getX() + logicX * positions[i].getY()] = activePiece.getColor();
-    }
+    }    
 }
 void Logic::moveTetromino(char keycode){
     int modX;
     int modY;
     bool invalidMove = false;
-    bool inactive = false;
+    locked = false;
 
     switch (keycode)
         {
@@ -124,16 +137,17 @@ void Logic::moveTetromino(char keycode){
             invalidMove = true;
             if(keycode == 'd')
             {
-                inactive = true;
+                locked = true;
+                
             }
         }
     }
 
-    if (invalidMove == true || inactive == true)
+    if (invalidMove == true || locked == true)
     {
         activePiece.setPixels(savedPos);
-        if (inactive == true)
-        {   
+        if (locked == true)
+        {
             hardDrop = false;
             for (int i = 0; i < savedPos.size(); i++)
             {
@@ -150,6 +164,7 @@ void Logic::moveTetromino(char keycode){
     updateMatrix();     
 }
 void Logic::rotateTetromino(){
+    locked = false;
     int biggestYRef = -1;
     int biggestXRef = -1;
     
@@ -279,11 +294,11 @@ void Logic::deleteRow(){
     }  
 }
 void Logic::CalcLevel(){
-    while (localRows >= 8)
+    while (localRows >= rows_to_level_up)
     {
         level++;
         CalcSlowness();
-        localRows -= 8;
+        localRows -= rows_to_level_up;
     }    
 }
 void Logic::CalcSlowness(){
@@ -331,16 +346,41 @@ void Logic::CleanUp(){
 
     status = 1;
 
-    Tetromino newPiece(coorZero);
+    Tetromino newPiece(coorZero,0);
     nextPiece = newPiece;
     newTetromino();    
+}
+void Logic::Overlay(){
+    //cout << "overlay" << endl;
+    prev_overlay = curr_overlay;
+    curr_overlay = activePiece.getPixels();
+    bool active = true;
+    while (active)
+    {
+        for (int i = 0; i < curr_overlay.size(); i++)
+        {
+            curr_overlay[i].modY(1);
+        }
+        for (int i = 0; i < curr_overlay.size(); i++)
+        {
+            if (curr_overlay[i].getY() >= logicY || logicMatrix[curr_overlay[i].getX() + logicX * curr_overlay[i].getY()] == true)
+            {
+                active = false;
+                break;
+            }
+        }    
+    }
+    for (int i = 0; i < curr_overlay.size(); i++)
+    {
+        curr_overlay[i].modY(-1);
+    }
 }
 void Logic::ActivateHardDrop(){
     hardDrop = true;
     while (hardDrop)
     {
         moveTetromino('d');
-    }    
+    } 
 }
 Logic::~Logic(){
 }

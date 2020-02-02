@@ -4,6 +4,8 @@
 #include "tetromino.hpp"
 
 using namespace std;
+
+const int rows_to_level_up = 1;
 class Logic
 {
 private:
@@ -16,6 +18,9 @@ private:
 
     Pixel coorZero;
     vector<Pixel> savedPos;
+    vector<Pixel> curr_overlay;
+    vector<Pixel> prev_overlay;
+    bool locked;
 
     int score;
     int level;
@@ -53,6 +58,7 @@ public:
     void CalcSlowness();
 
     void ActivateHardDrop();
+    void Overlay();
 
     void CheckGameOver();
     void CleanUp();

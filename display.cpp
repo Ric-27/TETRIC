@@ -1,86 +1,25 @@
-#include <SFML/Graphics.hpp>
-#include <iostream>
-#include "logic.hpp"
-#include <chrono>
-#include <thread>
+#include "display.hpp"
 
-
-int const xSize = 10;
-int const ySize = 24;
-int counterGravity = 0;
-
-const int pixel_factor = 30;
-
-const int window_width = 39; //39
-const int window_height = 22; //22
-
-int colorChanging = 0;
-bool colorAug = true;
-
-void DrawTitleScreen();
-void DrawGame(vector<string>);
-void DrawPlayers(vector<string>,int,vector<string>,int,vector<string>,int);
-void DrawNext(vector<string>);
-void DrawPoints(int, int, int);
-void DrawGameOver(int, int, int);
-void DrawBackground();
-void DrawPause();
-void ChangeColor();
-
-sf::RenderWindow window(sf::VideoMode(window_width * pixel_factor, window_height * pixel_factor), "TETRIC");
-
-int main()
-{  
-   Logic game(xSize, ySize);
+Display::Display(): 
+   xSize(10),
+   ySize(24),
+   pixel_factor(30),
+   window_width(39),
+   window_height(22),
+   window(sf::VideoMode(window_width * pixel_factor, window_height * pixel_factor), "TETRIC"),
+   game(xSize, ySize)
+{
+   level = game.getLevel();
+   sleepCont = 0;
+   colorChanging = 0;
+   colorAug = true;
+   counterGravity = 0;
+}
+void Display::Run()
+{
    while (window.isOpen())
    {
-      sf::Event event;
-      while (window.pollEvent(event))
-      {
-         if (event.type == sf::Event::Closed)
-            window.close();
-         if (event.type == sf::Event::KeyPressed)
-         {
-            switch (event.key.code)
-            {
-            case sf::Keyboard::S: //Start Game
-               if (game.getStatus() == 0) game.setStatus(1);
-               break;
-            case sf::Keyboard::Q: //Quit
-               return 0;
-               break;
-            case sf::Keyboard::P: //Pause
-               if (game.getStatus() == 1)
-                  game.setStatus(2);
-               else if (game.getStatus() == 2) 
-                  game.setStatus(1);
-               break;
-            case sf::Keyboard::C: //Connection
-               /* code */
-               break;
-            case sf::Keyboard::R: //Restart
-               if (game.getStatus() == 3) game.CleanUp();              
-               break;
-            case sf::Keyboard::Up: // Rotate
-               game.rotateTetromino();
-               break;
-            case sf::Keyboard::Right: //Move Right
-               game.moveTetromino('r');
-               break;
-            case sf::Keyboard::Left: //Move Left
-               game.moveTetromino('l');
-               break;
-            case sf::Keyboard::Down: //SoftDrop
-               game.moveTetromino('d');
-               break;
-            case sf::Keyboard::Space: //HardDrop
-               game.ActivateHardDrop();
-               break;
-            default:
-               break;
-            }      
-         }
-      }
+      Events();
       window.clear();      
       switch (game.getStatus())
       {
@@ -95,6 +34,11 @@ int main()
             DrawPlayers(game.getMatrix(),game.getScore(),game.getMatrix(),game.getScore(),game.getMatrix(),game.getScore());
             DrawNext(game.getNext());
             DrawPoints(game.getScore(),game.getRows(),game.getLevel());
+            if (level != game.getLevel())
+            {
+               sleepCont++;
+               DrawLevelUp();
+            }           
             if (counterGravity > game.GetSlowness()) 
             {
                counterGravity = 0;
@@ -115,24 +59,74 @@ int main()
             DrawGameOver(game.getScore(),game.getRows(),game.getLevel());
             break;
       }
-      
-      window.display();      
+      window.display();
    }
-   return 0;
 }
-
-/////////////////////////////////////////////////////////
-void ChangeColor(){
+void Display::Events()
+{
+    while (window.pollEvent(event))
+        {
+            if (event.type == sf::Event::Closed)
+            window.close();
+            if (event.type == sf::Event::KeyPressed)
+            {
+            switch (event.key.code)
+            {
+            case sf::Keyboard::S: //Start Game
+               if (game.getStatus() == 0) game.setStatus(1);
+               break;
+            case sf::Keyboard::Q: //Quit
+               window.close();
+               break;
+            case sf::Keyboard::P: //Pause
+               if (game.getStatus() == 1)
+                  game.setStatus(2);
+               else if (game.getStatus() == 2) 
+                  game.setStatus(1);
+               break;
+            case sf::Keyboard::C: //Connection
+               
+               break;
+            case sf::Keyboard::R: //Restart
+               if (game.getStatus() == 3){
+                  level = 0;
+                  game.CleanUp();
+               }              
+               break;
+            case sf::Keyboard::Up: // Rotate
+            game.rotateTetromino();
+               break;
+            case sf::Keyboard::Right: //Move Right
+               game.moveTetromino('r');
+               break;
+            case sf::Keyboard::Left: //Move Left
+               game.moveTetromino('l');
+               break;
+            case sf::Keyboard::Down: //SoftDrop
+               game.moveTetromino('d');
+               break;
+            case sf::Keyboard::Space: //HardDrop
+               game.ActivateHardDrop();
+               break;
+            default:
+               break;
+            }      
+        }
+    } 
+}
+void Display::ChangeColor()
+{
    if (colorAug)
    {
-      colorChanging++;
+      colorChanging+=2;
       colorAug = (colorChanging > 250) ? false : true;
    } else {
-      colorChanging--;
-         colorAug = (colorChanging < 10) ? true : false;
+      colorChanging-=2;
+      colorAug = (colorChanging < 20) ? true : false;
    } 
 }
-void DrawPause(){
+void Display::DrawPause()
+{
    ChangeColor();
    sf::Font font;
    if (!font.loadFromFile("font.ttf"))
@@ -147,7 +141,29 @@ void DrawPause(){
    text.setPosition((window_width/2 * pixel_factor) - (15.5*pixel_factor), (4*pixel_factor));
    window.draw(text);
 }
-void DrawGame(vector<string> argMatrix){
+void Display::DrawLevelUp()
+{
+   sf::Font font;
+   if (!font.loadFromFile("font.ttf"))
+   {
+      cout << "font load error..." << endl;
+   }
+   sf::Text text;
+   text.setFont(font);
+   text.setString("Level up");
+   text.setCharacterSize(pixel_factor * 2);
+   text.setFillColor(sf::Color(255,255,255,150));
+   text.setPosition((2*pixel_factor), 9*pixel_factor); 
+   window.draw(text);
+   
+   if (sleepCont > 50)
+   {
+      level = game.getLevel();
+      sleepCont = 0;
+   }
+}
+void Display::DrawGame(vector<string> argMatrix)
+{
    for (int j = 4; j < ySize; j++)
    {
       for (int i = 0; i < xSize; i++)
@@ -173,7 +189,8 @@ void DrawGame(vector<string> argMatrix){
       }        
    }
 }
-void DrawPlayers(vector<string> argMatrixP1,int argScoreP1,vector<string> argMatrixP2,int argScoreP2,vector<string> argMatrixP3,int argScoreP3){
+void Display::DrawPlayers(vector<string> argMatrixP1,int argScoreP1,vector<string> argMatrixP2,int argScoreP2,vector<string> argMatrixP3,int argScoreP3)
+{
    int local_PF = pixel_factor / 2.5;
    for (int j = 4; j < ySize; j++)
    {
@@ -277,7 +294,7 @@ void DrawPlayers(vector<string> argMatrixP1,int argScoreP1,vector<string> argMat
    text.setString("SCORE");   
    text.setPosition(27.5*pixel_factor, 8.8 * pixel_factor);
    window.draw(text);
-   k = to_string(argScoreP1);
+   k = to_string(argScoreP2);
    text.setString(k);   
    text.setPosition(27.1*pixel_factor, 9.8 * pixel_factor);
    window.draw(text);
@@ -285,12 +302,13 @@ void DrawPlayers(vector<string> argMatrixP1,int argScoreP1,vector<string> argMat
    text.setString("SCORE");   
    text.setPosition(33.5*pixel_factor, 8.8 * pixel_factor);
    window.draw(text);
-   k = to_string(argScoreP1);
+   k = to_string(argScoreP3);
    text.setString(k);   
    text.setPosition(33.1*pixel_factor, 9.8 * pixel_factor);
    window.draw(text);
 }
-void DrawTitleScreen(){
+void Display::DrawTitleScreen()
+{
    ChangeColor();   
    sf::Font font;
    if (!font.loadFromFile("font.ttf"))
@@ -329,7 +347,8 @@ void DrawTitleScreen(){
    text.setPosition((3.9*pixel_factor),(17.2*pixel_factor));
    window.draw(text);
 }
-void DrawGameOver(int argScore, int argRows, int argLevel){
+void Display::DrawGameOver(int argScore, int argRows, int argLevel)
+{
    ChangeColor();   
    sf::Font font;
    if (!font.loadFromFile("font.ttf"))
@@ -368,7 +387,8 @@ void DrawGameOver(int argScore, int argRows, int argLevel){
    text.setPosition((0.5*pixel_factor),(17.2*pixel_factor));
    window.draw(text);
 }
-void DrawBackground(){
+void Display::DrawBackground()
+{
    for (int i = 0; i < window_width; i++)
    {
       for (int j = 0; j < window_height; j++)
@@ -429,24 +449,19 @@ void DrawBackground(){
    text.setPosition((21*pixel_factor), (20.5*pixel_factor));
    window.draw(text);
 }
-void DrawNext(vector<string> argMatrix){
+void Display::DrawNext(vector<string> argMatrix)
+{
    sf::Font font;
    if (!font.loadFromFile("font.ttf"))
    {
       cout << "font load error..." << endl;
    }
    sf::Text text;
-   // select the font
-   text.setFont(font); // font is a sf::Font
-   // set the string to display
+   text.setFont(font);
    text.setString("NEXT");
-   // set the character size
-   text.setCharacterSize(pixel_factor * 1.5); // in pixels, not points!
-   // set the color
+   text.setCharacterSize(pixel_factor * 1.5);
    text.setFillColor(sf::Color::White);
-   // set the text style
    text.setPosition(2*pixel_factor + xSize*pixel_factor + 1.4*pixel_factor, 1.5*pixel_factor);
-   // inside the main loop, between window.clear() and window.display()
    window.draw(text);
    for (int j = 0; j < 4; j++)
    {
@@ -473,7 +488,8 @@ void DrawNext(vector<string> argMatrix){
       }        
    }
 }
-void DrawPoints(int argScore, int argRows, int argLevel){
+void Display::DrawPoints(int argScore, int argRows, int argLevel)
+{
    for (int i = 0; i < 6; i++)
    {
       sf::RectangleShape pixel(sf::Vector2f(pixel_factor, pixel_factor));
@@ -543,17 +559,7 @@ void DrawPoints(int argScore, int argRows, int argLevel){
    text.setFillColor(sf::Color::White);
    text.setPosition(2*pixel_factor + xSize*pixel_factor, pixel_factor*18 - pixel_factor/2);
    window.draw(text);
-  /*
-  for (int i = 0; i < 22; i++)
-  {
-      sf::Text text;
-      text.setFont(font);
-      string k = to_string(i);
-      text.setString(k);
-      text.setCharacterSize(pixel_factor * 1.5);
-      text.setFillColor(sf::Color::White);
-      text.setPosition(2*pixel_factor + xSize*pixel_factor, pixel_factor*i - pixel_factor/2);
-      window.draw(text);
-  }
-  */
+}
+Display::~Display()
+{
 }
