@@ -5,7 +5,7 @@
 
 using namespace std;
 
-const int rows_to_level_up = 1;
+const int rows_to_level_up = 6;
 class Logic
 {
 private:
@@ -41,6 +41,8 @@ public:
     int getScore();
     int getLevel();
     int getRows();
+
+    int getRows2LU();
 
     void setStatus(int);
     int getStatus();

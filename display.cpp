@@ -542,7 +542,7 @@ void Display::DrawPoints(int argScore, int argRows, int argLevel)
    text.setPosition(2*pixel_factor + xSize*pixel_factor + 1.3*pixel_factor, pixel_factor*13 - pixel_factor/2);
    window.draw(text);
    k = to_string(argRows);
-   text.setString(k);
+   text.setString(k + "  of  " + to_string((level+1)*game.getRows2LU()));
    text.setCharacterSize(pixel_factor * 1.5);
    text.setFillColor(sf::Color::White);
    text.setPosition(2*pixel_factor + xSize*pixel_factor, pixel_factor*14 - pixel_factor/2);

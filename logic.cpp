@@ -382,5 +382,9 @@ void Logic::ActivateHardDrop(){
         moveTetromino('d');
     } 
 }
+int Logic::getRows2LU()
+{
+    return rows_to_level_up;
+}
 Logic::~Logic(){
 }
