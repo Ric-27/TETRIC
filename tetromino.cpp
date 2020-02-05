@@ -1,7 +1,5 @@
 #include "tetromino.hpp"
 
-#include <iostream>
-
 Tetromino::Tetromino()
 {
 }
@@ -14,16 +12,26 @@ Tetromino::Tetromino(Tetromino &argTetromino)
 Tetromino::Tetromino(Pixel coorZero,int argId)
 {
     active = true;
-    pixels.resize(4);
-
-    int random = argId;
-    while (random == argId)
+    pixels.resize(amount_of_pixels);
+    for (int i = 0; i < pixels.size(); i++)
     {
-        unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
-        std::default_random_engine generator(seed);
-        std::uniform_int_distribution<int> distribution(1,8);
-        random = distribution(generator);
+        pixels[i].setX(-1);
+        pixels[i].setY(-1);        
     }
+    int random = argId;
+    if (random < 0)
+    {
+        random = abs(random);
+    } else {    
+        while (random == argId)
+        {
+            unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+            std::default_random_engine generator(seed);
+            std::uniform_int_distribution<int> distribution(1,variety);
+            random = distribution(generator);
+        }
+    }
+    //cout << "piece: " << random << endl;
     switch (random)
     {
     case 1: //o
@@ -39,7 +47,7 @@ Tetromino::Tetromino(Pixel coorZero,int argId)
         pixels[3].setX(coorZero.getX() + 1);
         pixels[3].setY(coorZero.getY() - 1);
 
-        color = "15.0.194";
+        color = tetromino_o_color;
         id = random;
         break;
     case 2: //i
@@ -55,7 +63,7 @@ Tetromino::Tetromino(Pixel coorZero,int argId)
         pixels[3].setX(coorZero.getX() + 2);
         pixels[3].setY(coorZero.getY());
 
-        color = "215.33.33";
+        color = tetromino_i_color;
         id = random;
         break;
     case 3: //l
@@ -71,7 +79,7 @@ Tetromino::Tetromino(Pixel coorZero,int argId)
         pixels[3].setX(coorZero.getX() + 1);
         pixels[3].setY(coorZero.getY() - 1);
 
-        color = "216.36.122";
+        color = tetromino_l_color;
         id = random;
         break;
     case 4: //j
@@ -87,7 +95,7 @@ Tetromino::Tetromino(Pixel coorZero,int argId)
         pixels[3].setX(coorZero.getX() - 1);
         pixels[3].setY(coorZero.getY() - 1);
 
-        color = "241.196.15";
+        color = tetromino_j_color;
         id = random;
         break;
     case 5: //s
@@ -103,7 +111,7 @@ Tetromino::Tetromino(Pixel coorZero,int argId)
         pixels[3].setX(coorZero.getX() + 1);
         pixels[3].setY(coorZero.getY() - 1);
 
-        color = "211.84.0";
+        color = tetromino_s_color;
         id = random;
         break;
     case 6: //z
@@ -119,7 +127,7 @@ Tetromino::Tetromino(Pixel coorZero,int argId)
         pixels[3].setX(coorZero.getX() - 1);
         pixels[3].setY(coorZero.getY() - 1);
 
-        color = "52.152.219";
+        color = tetromino_z_color;
         id = random;
         break;
     case 7: //t
@@ -135,26 +143,73 @@ Tetromino::Tetromino(Pixel coorZero,int argId)
         pixels[3].setX(coorZero.getX() - 1);
         pixels[3].setY(coorZero.getY());
 
-        color = "46.204.113 ";
+        color = tetromino_t_color;
         id = random;
         break;
     case 8: //.
         pixels[0].setX(coorZero.getX());
         pixels[0].setY(coorZero.getY());
         
-        pixels[1].setX(coorZero.getX());
+        color = tetromino_legendary;
+        id = random;
+        break;
+    case 9: //u
+        pixels[0].setX(coorZero.getX());
+        pixels[0].setY(coorZero.getY());
+        
+        pixels[1].setX(coorZero.getX() + 1);
+        pixels[1].setY(coorZero.getY());
+        
+        pixels[2].setX(coorZero.getX() - 1);
+        pixels[2].setY(coorZero.getY());
+        
+        pixels[3].setX(coorZero.getX() + 1);
+        pixels[3].setY(coorZero.getY() - 1);
+
+        pixels[4].setX(coorZero.getX() - 1);
+        pixels[4].setY(coorZero.getY() - 1);
+
+        color = tetromino_legendary;
+        id = random;
+        break;
+    case 10: //corner
+        pixels[0].setX(coorZero.getX());
+        pixels[0].setY(coorZero.getY());
+        
+        pixels[1].setX(coorZero.getX() + 1);
+        pixels[1].setY(coorZero.getY());
+
+        pixels[2].setX(coorZero.getX());
+        pixels[2].setY(coorZero.getY() - 1);
+        
+        color = tetromino_legendary;
+        id = random;
+        break;
+    default: //o
+        pixels[0].setX(coorZero.getX());
+        pixels[0].setY(coorZero.getY());
+        
+        pixels[1].setX(coorZero.getX() + 1);
         pixels[1].setY(coorZero.getY());
         
         pixels[2].setX(coorZero.getX());
-        pixels[2].setY(coorZero.getY());
+        pixels[2].setY(coorZero.getY() - 1);
         
-        pixels[3].setX(coorZero.getX());
-        pixels[3].setY(coorZero.getY());
+        pixels[3].setX(coorZero.getX() + 1);
+        pixels[3].setY(coorZero.getY() - 1);
 
-        color = "75.0.130";
-        id = random;
-        break;    
+        color = "15.0.194";
+        id = 1;
+        break;
     }
+    for (int i = 1; i < pixels.size(); i++)
+    {
+        if (pixels[i].getX() == -1 && pixels[i].getY() == -1)
+        {
+            pixels[i].setX(pixels[0].getX());
+            pixels[i].setY(pixels[0].getY());
+        }        
+    }    
 }
 std::vector<Pixel> Tetromino::getPixels()
 {

@@ -3,6 +3,8 @@
 #include <chrono>
 #include <iostream>
 
+#include "config.inl"
+
 class Display
 {
 private:

@@ -3,9 +3,9 @@
 #include <algorithm>
 #include "tetromino.hpp"
 
-using namespace std;
+#include "config.inl"
 
-const int rows_to_level_up = 6;
+using namespace std;
 class Logic
 {
 private:
@@ -28,6 +28,8 @@ private:
     int localRows;
     int slowness;
 
+    int special_counter;
+
     int status; //0 start, 1 playing, 2 pause, 3 gameover
 
     bool hardDrop;
@@ -41,8 +43,6 @@ public:
     int getScore();
     int getLevel();
     int getRows();
-
-    int getRows2LU();
 
     void setStatus(int);
     int getStatus();

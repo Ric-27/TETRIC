@@ -1,11 +1,11 @@
 #include "display.hpp"
 
 Display::Display(): 
-   xSize(10),
-   ySize(24),
-   pixel_factor(30),
-   window_width(39),
-   window_height(22),
+   xSize(width),
+   ySize(height + amount_of_pixels),
+   pixel_factor(px_factor),
+   window_width(screen_width),
+   window_height(screen_height),
    window(sf::VideoMode(window_width * pixel_factor, window_height * pixel_factor), "TETRIC"),
    game(xSize, ySize)
 {
@@ -94,19 +94,19 @@ void Display::Events()
                }              
                break;
             case sf::Keyboard::Up: // Rotate
-            game.rotateTetromino();
+               if (game.getStatus() == 1) game.rotateTetromino();
                break;
             case sf::Keyboard::Right: //Move Right
-               game.moveTetromino('r');
+               if (game.getStatus() == 1) game.moveTetromino('r');
                break;
             case sf::Keyboard::Left: //Move Left
-               game.moveTetromino('l');
+               if (game.getStatus() == 1) game.moveTetromino('l');
                break;
             case sf::Keyboard::Down: //SoftDrop
-               game.moveTetromino('d');
+               if (game.getStatus() == 1) game.moveTetromino('d');
                break;
             case sf::Keyboard::Space: //HardDrop
-               game.ActivateHardDrop();
+               if (game.getStatus() == 1) game.ActivateHardDrop();
                break;
             default:
                break;
@@ -164,14 +164,14 @@ void Display::DrawLevelUp()
 }
 void Display::DrawGame(vector<string> argMatrix)
 {
-   for (int j = 4; j < ySize; j++)
+   for (int j = amount_of_pixels; j < ySize; j++)
    {
       for (int i = 0; i < xSize; i++)
       {
          sf::RectangleShape pixel(sf::Vector2f(pixel_factor, pixel_factor));
          pixel.setOutlineThickness(-1.f);
-         pixel.setOutlineColor(sf::Color(20,20,20,255));
-         pixel.setPosition((i + 1) *pixel_factor, (j - 3)*pixel_factor);
+         pixel.setOutlineColor(sf::Color(outline_background_color,outline_background_color,outline_background_color,255));
+         pixel.setPosition((i + 1) *pixel_factor, (j - (amount_of_pixels - 1))*pixel_factor);
          string k = argMatrix[i + xSize * j];
          if (k.length() > 0)
          {
@@ -183,7 +183,7 @@ void Display::DrawGame(vector<string> argMatrix)
             short b = stoi(k.substr(posp2 + 1,  k.length() - posp2 - 1));
             pixel.setFillColor(sf::Color(r,g,b,255));  
          } else {
-            pixel.setFillColor(sf::Color::Black);
+            pixel.setFillColor(sf::Color(background_game_color,background_game_color,background_game_color,255));
          }             
          window.draw(pixel);            
       }        
@@ -192,12 +192,12 @@ void Display::DrawGame(vector<string> argMatrix)
 void Display::DrawPlayers(vector<string> argMatrixP1,int argScoreP1,vector<string> argMatrixP2,int argScoreP2,vector<string> argMatrixP3,int argScoreP3)
 {
    int local_PF = pixel_factor / 2.5;
-   for (int j = 4; j < ySize; j++)
+   for (int j = amount_of_pixels; j < ySize; j++)
    {
       for (int i = 0; i < xSize; i++)
       {
          sf::RectangleShape pixel(sf::Vector2f(local_PF, local_PF));
-         pixel.setPosition(((i + 1) *local_PF)+20.6*pixel_factor, ((j - 4)*local_PF)+1*pixel_factor);
+         pixel.setPosition(((i + 1) *local_PF)+20.6*pixel_factor, ((j - amount_of_pixels)*local_PF)+1*pixel_factor);
          string k = argMatrixP1[i + xSize * j];
          if (k.length() > 0)
          {
@@ -209,17 +209,17 @@ void Display::DrawPlayers(vector<string> argMatrixP1,int argScoreP1,vector<strin
             short b = stoi(k.substr(posp2 + 1,  k.length() - posp2 - 1));
             pixel.setFillColor(sf::Color(r,g,b,255));
          } else {
-            pixel.setFillColor(sf::Color::Black);
+            pixel.setFillColor(sf::Color(background_game_color,background_game_color,background_game_color,255));
          }             
          window.draw(pixel);            
       }        
    }
-   for (int j = 4; j < ySize; j++)
+   for (int j = amount_of_pixels; j < ySize; j++)
    {
       for (int i = 0; i < xSize; i++)
       {
          sf::RectangleShape pixel(sf::Vector2f(local_PF, local_PF));
-         pixel.setPosition(((i + 1) *local_PF)+26.6*pixel_factor, ((j - 4)*local_PF)+1*pixel_factor);
+         pixel.setPosition(((i + 1) *local_PF)+26.6*pixel_factor, ((j - amount_of_pixels)*local_PF)+1*pixel_factor);
          string k = argMatrixP2[i + xSize * j];
          if (k.length() > 0)
          {
@@ -231,17 +231,17 @@ void Display::DrawPlayers(vector<string> argMatrixP1,int argScoreP1,vector<strin
             short b = stoi(k.substr(posp2 + 1,  k.length() - posp2 - 1));
             pixel.setFillColor(sf::Color(r,g,b,255)); 
          } else {
-            pixel.setFillColor(sf::Color::Black);
+            pixel.setFillColor(sf::Color(background_game_color,background_game_color,background_game_color,255));
          }             
          window.draw(pixel);            
       }    
    }
-   for (int j = 4; j < ySize; j++)
+   for (int j = amount_of_pixels; j < ySize; j++)
    {
       for (int i = 0; i < xSize; i++)
       {
          sf::RectangleShape pixel(sf::Vector2f(local_PF, local_PF));
-         pixel.setPosition(((i + 1) *local_PF)+32.6*pixel_factor, ((j - 4)*local_PF)+1*pixel_factor);
+         pixel.setPosition(((i + 1) *local_PF)+32.6*pixel_factor, ((j - amount_of_pixels)*local_PF)+1*pixel_factor);
          string k = argMatrixP3[i + xSize * j];
          if (k.length() > 0)
          {
@@ -253,7 +253,7 @@ void Display::DrawPlayers(vector<string> argMatrixP1,int argScoreP1,vector<strin
             short b = stoi(k.substr(posp2 + 1,  k.length() - posp2 - 1));
             pixel.setFillColor(sf::Color(r,g,b,255)); 
          } else {
-            pixel.setFillColor(sf::Color::Black);
+            pixel.setFillColor(sf::Color(background_game_color,background_game_color,background_game_color,255));
          }             
          window.draw(pixel);            
       }        
@@ -395,9 +395,9 @@ void Display::DrawBackground()
       {
          sf::RectangleShape pixel(sf::Vector2f(pixel_factor, pixel_factor));
          pixel.setOutlineThickness(-1.f);
-         pixel.setOutlineColor(sf::Color(40,40,40,255));
+         pixel.setOutlineColor(sf::Color(outline_background_color,outline_background_color,outline_background_color,255));
          pixel.setPosition(i*pixel_factor, j*pixel_factor);
-         pixel.setFillColor(sf::Color(61,61,61,255));
+         pixel.setFillColor(sf::Color(background_color,background_color,background_color,255));
          window.draw(pixel);
       }      
    }
@@ -409,7 +409,7 @@ void Display::DrawBackground()
    sf::Text text;
    text.setFont(font);
    text.setCharacterSize(pixel_factor * 2.5);
-   text.setFillColor(sf::Color(200,200,200,255));
+   text.setFillColor(sf::Color(legend_text_color,legend_text_color,legend_text_color,255));
 
    text.setString("Press         to");   
    text.setPosition((21*pixel_factor), (11*pixel_factor));
@@ -458,9 +458,8 @@ void Display::DrawNext(vector<string> argMatrix)
    }
    sf::Text text;
    text.setFont(font);
-   text.setString("NEXT");
    text.setCharacterSize(pixel_factor * 1.5);
-   text.setFillColor(sf::Color::White);
+   text.setString("NEXT");
    text.setPosition(2*pixel_factor + xSize*pixel_factor + 1.4*pixel_factor, 1.5*pixel_factor);
    window.draw(text);
    for (int j = 0; j < 4; j++)
@@ -469,7 +468,7 @@ void Display::DrawNext(vector<string> argMatrix)
       {
          sf::RectangleShape pixel(sf::Vector2f(pixel_factor, pixel_factor));
          pixel.setOutlineThickness(-1.f);
-         pixel.setOutlineColor(sf::Color(20,20,20,255));
+         pixel.setOutlineColor(sf::Color(outline_game_color,outline_game_color,outline_game_color,255));
          pixel.setPosition((i + 2 + xSize) *pixel_factor, (j + 3)*pixel_factor);
          string k = argMatrix[i + 6 * j];
          if (k.length() > 0)
@@ -482,7 +481,7 @@ void Display::DrawNext(vector<string> argMatrix)
             short b = stoi(k.substr(posp2 + 1,  k.length() - posp2 - 1));
             pixel.setFillColor(sf::Color(r,g,b,255));
          } else {
-            pixel.setFillColor(sf::Color::Black);
+            pixel.setFillColor(sf::Color(background_game_color,background_game_color,background_game_color,255));
          }             
          window.draw(pixel);            
       }        
@@ -494,27 +493,27 @@ void Display::DrawPoints(int argScore, int argRows, int argLevel)
    {
       sf::RectangleShape pixel(sf::Vector2f(pixel_factor, pixel_factor));
       pixel.setOutlineThickness(-1.f);
-      pixel.setOutlineColor(sf::Color(20,20,20,255));
+      pixel.setOutlineColor(sf::Color(outline_background_color,outline_background_color,outline_background_color,255));
       pixel.setPosition((i + 2 + xSize) *pixel_factor, (10)*pixel_factor);
-      pixel.setFillColor(sf::Color::Black);            
+      pixel.setFillColor(sf::Color(background_game_color,background_game_color,background_game_color,255));            
       window.draw(pixel);            
    }
    for (int i = 0; i < 6; i++)
    {
       sf::RectangleShape pixel(sf::Vector2f(pixel_factor, pixel_factor));
       pixel.setOutlineThickness(-1.f);
-      pixel.setOutlineColor(sf::Color(20,20,20,255));
+      pixel.setOutlineColor(sf::Color(outline_background_color,outline_background_color,outline_background_color,255));
       pixel.setPosition((i + 2 + xSize) *pixel_factor, (14)*pixel_factor);
-      pixel.setFillColor(sf::Color::Black);            
+      pixel.setFillColor(sf::Color(background_game_color,background_game_color,background_game_color,255));            
       window.draw(pixel);            
    }
    for (int i = 0; i < 6; i++)
    {
       sf::RectangleShape pixel(sf::Vector2f(pixel_factor, pixel_factor));
       pixel.setOutlineThickness(-1.f);
-      pixel.setOutlineColor(sf::Color(20,20,20,255));
+      pixel.setOutlineColor(sf::Color(outline_background_color,outline_background_color,outline_background_color,255));
       pixel.setPosition((i + 2 + xSize) *pixel_factor, (18)*pixel_factor);
-      pixel.setFillColor(sf::Color::Black);            
+      pixel.setFillColor(sf::Color(background_game_color,background_game_color,background_game_color,255));            
       window.draw(pixel);            
    }
    sf::Font font;
@@ -524,39 +523,30 @@ void Display::DrawPoints(int argScore, int argRows, int argLevel)
    }
    sf::Text text;
    text.setFont(font);
-   text.setString("SCORE");
    text.setCharacterSize(pixel_factor * 1.5);
-   text.setFillColor(sf::Color::White);
+   text.setFillColor(sf::Color(score_text_color,score_text_color,score_text_color,255));
+
+   text.setString("SCORE");
    text.setPosition(2*pixel_factor + xSize*pixel_factor + 0.9*pixel_factor, pixel_factor*9 - pixel_factor/2);
    window.draw(text);
    string k = to_string(argScore);
    text.setString(k);
-   text.setCharacterSize(pixel_factor * 1.5);
-   text.setFillColor(sf::Color::White);
    text.setPosition(2*pixel_factor + xSize*pixel_factor, pixel_factor*10 - pixel_factor/2);
    window.draw(text);
 
    text.setString("ROWS");
-   text.setCharacterSize(pixel_factor * 1.5);
-   text.setFillColor(sf::Color::White);
    text.setPosition(2*pixel_factor + xSize*pixel_factor + 1.3*pixel_factor, pixel_factor*13 - pixel_factor/2);
    window.draw(text);
    k = to_string(argRows);
-   text.setString(k + "  of  " + to_string((level+1)*game.getRows2LU()));
-   text.setCharacterSize(pixel_factor * 1.5);
-   text.setFillColor(sf::Color::White);
+   text.setString(k + "  of  " + to_string((level+1)*rows_to_level));
    text.setPosition(2*pixel_factor + xSize*pixel_factor, pixel_factor*14 - pixel_factor/2);
    window.draw(text);
 
    text.setString("LEVEL");
-   text.setCharacterSize(pixel_factor * 1.5);
-   text.setFillColor(sf::Color::White);
    text.setPosition(2*pixel_factor + xSize*pixel_factor + 0.9*pixel_factor, pixel_factor*17 - pixel_factor/2);
    window.draw(text);
    k = to_string(argLevel);
    text.setString(k);
-   text.setCharacterSize(pixel_factor * 1.5);
-   text.setFillColor(sf::Color::White);
    text.setPosition(2*pixel_factor + xSize*pixel_factor, pixel_factor*18 - pixel_factor/2);
    window.draw(text);
 }

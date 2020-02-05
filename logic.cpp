@@ -3,7 +3,7 @@
 
 Logic::Logic(int argX, int argY){
     coorZero.setX(argX/2 - 1);
-    coorZero.setY(3);
+    coorZero.setY(amount_of_pixels - 1);
     colorMatrix.resize(argX * argY);
     logicMatrix.resize(argX * argY);
 
@@ -16,7 +16,9 @@ Logic::Logic(int argX, int argY){
     level = 0;
     rows = 0;
     localRows = 0;
-    slowness = 98;
+    slowness = initial_speed;
+
+    special_counter = 0;
 
     hardDrop = false;
 
@@ -52,10 +54,19 @@ int Logic::getStatus(){
     return status;
 }
 void Logic::newTetromino(){
+    special_counter++;
     activePiece = nextPiece;
     savedPos = activePiece.getPixels();
-    Tetromino newPiece(coorZero,nextPiece.GetId());
-    nextPiece = newPiece;
+    
+    if (special_counter > count_spawn_special)
+    {
+        special_counter = 0;
+        Tetromino newPiece(coorZero,(-2));
+        nextPiece = newPiece;
+    } else {
+        Tetromino newPiece(coorZero,nextPiece.GetId());
+        nextPiece = newPiece;
+    }    
     fillNextMatrix();
     updateMatrix();
 }
@@ -88,7 +99,7 @@ void Logic::updateMatrix(){
     }    
     for (int i = 0; i < curr_overlay.size(); i++)
     {
-        colorMatrix[curr_overlay[i].getX() + logicX * curr_overlay[i].getY()] = "80.80.80";
+        colorMatrix[curr_overlay[i].getX() + logicX * curr_overlay[i].getY()] = overlay_color;
     }
     for (int i = 0; i < savedPos.size(); i++)
     {
@@ -294,15 +305,15 @@ void Logic::deleteRow(){
     }  
 }
 void Logic::CalcLevel(){
-    while (localRows >= rows_to_level_up)
+    while (localRows >= rows_to_level)
     {
         level++;
         CalcSlowness();
-        localRows -= rows_to_level_up;
+        localRows -= rows_to_level;
     }    
 }
 void Logic::CalcSlowness(){
-    slowness = (slowness > 7) ? slowness - 14 : 7;
+    slowness = (slowness > min_speed) ? slowness - step_speed : min_speed;
 }
 void Logic::CalcScore(int argRows){
    switch (argRows)
@@ -324,7 +335,7 @@ void Logic::CalcScore(int argRows){
 void Logic::CheckGameOver(){
     for (int i = 0; i < logicX; i++)
     {
-        if (logicMatrix[i + logicX * 3] == 1)
+        if (logicMatrix[i + logicX * (logicY - height - 1)] == 1)
         {
             status = 3;
             break;
@@ -381,10 +392,6 @@ void Logic::ActivateHardDrop(){
     {
         moveTetromino('d');
     } 
-}
-int Logic::getRows2LU()
-{
-    return rows_to_level_up;
 }
 Logic::~Logic(){
 }

@@ -3,6 +3,8 @@
 #include <vector>
 #include "pixel.hpp"
 #include <chrono>
+
+#include "config.inl"
 class Tetromino
 {
 private:

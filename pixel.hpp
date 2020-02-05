@@ -1,3 +1,4 @@
+#include "config.inl"
 class Pixel
 {
 private:
