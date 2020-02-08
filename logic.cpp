@@ -76,11 +76,11 @@ void Logic::fillNextMatrix(){
     Pixel newRef;
     newRef.setX(2);
     newRef.setY(2);
-    for (int i = 0; i < nextMatrix.size(); i++)
+    for (unsigned i = 0; i < nextMatrix.size(); i++)
     {
         nextMatrix[i] = "";
     }
-    for (int i = 0; i < positions.size(); i++)
+    for (unsigned i = 0; i < positions.size(); i++)
     {
         positions[i].setX(positions[i].getX() - ref.getX() + newRef.getX());
         positions[i].setY(positions[i].getY() - ref.getY() + newRef.getY());
@@ -92,56 +92,53 @@ void Logic::updateMatrix(){
     vector<Pixel> positions = activePiece.getPixels();
     if(!locked)
     {
-        for (int i = 0; i < prev_overlay.size(); i++)
+        for (unsigned i = 0; i < prev_overlay.size(); i++)
         {
             colorMatrix[prev_overlay[i].getX() + logicX * prev_overlay[i].getY()] = "";
         }    
     }    
-    for (int i = 0; i < curr_overlay.size(); i++)
+    for (unsigned i = 0; i < curr_overlay.size(); i++)
     {
         colorMatrix[curr_overlay[i].getX() + logicX * curr_overlay[i].getY()] = overlay_color;
     }
-    for (int i = 0; i < savedPos.size(); i++)
+    for (unsigned i = 0; i < savedPos.size(); i++)
     {
         colorMatrix[savedPos[i].getX() + logicX * savedPos[i].getY()] = "";
     }
-    for (int i = 0; i < positions.size(); i++)
+    for (unsigned i = 0; i < positions.size(); i++)
     {
         colorMatrix[positions[i].getX() + logicX * positions[i].getY()] = activePiece.getColor();
     }    
 }
 void Logic::moveTetromino(char keycode){
-    int modX;
-    int modY;
+    int modX = 0;
+    int modY = 0;
     bool invalidMove = false;
     locked = false;
 
     switch (keycode)
-        {
+    {
         case 'd':
-            modX = 0;
             modY = 1;
             break;
         case 'l':
             modX = -1;
-            modY = 0;
             break;
         case 'r':
             modX = 1;
-            modY = 0;
             break;
     }
 
     savedPos = activePiece.getPixels();
     vector<Pixel> newPos = savedPos;
 
-    for (int i = 0; i < newPos.size(); i++)
+    for (unsigned i = 0; i < newPos.size(); i++)
     {
         newPos[i].modX(modX);
         newPos[i].modY(modY);
     }
 
-    for (int i = 0; i < newPos.size(); i++)
+    for (unsigned i = 0; i < newPos.size(); i++)
     {
         if (newPos[i].getX() >= logicX || newPos[i].getX() < 0 || newPos[i].getY() >= logicY || logicMatrix[newPos[i].getX() + logicX * newPos[i].getY()] == true) //preventing side moves
         {
@@ -160,7 +157,7 @@ void Logic::moveTetromino(char keycode){
         if (locked == true)
         {
             hardDrop = false;
-            for (int i = 0; i < savedPos.size(); i++)
+            for (unsigned i = 0; i < savedPos.size(); i++)
             {
                 logicMatrix[savedPos[i].getX() + logicX * savedPos[i].getY()] = true;
             }
@@ -190,20 +187,20 @@ void Logic::rotateTetromino(){
 
     bool topOut = false;
 
-    for (int i = 0; i < newPos.size(); i++) //correction
+    for (unsigned i = 0; i < newPos.size(); i++) //correction
     {
         biggestYRef = (newPos[i].getY() > biggestYRef) ? newPos[i].getY() : biggestYRef;
         biggestXRef = (newPos[i].getX() > biggestXRef  ) ? newPos[i].getX() : biggestXRef;
     }
 
-    for (int i = 0; i < newPos.size(); i++)
+    for (unsigned i = 0; i < newPos.size(); i++)
     {
         newPos[i] = newPos[i] - refPixel;
         newPos[i].Rotate();
         newPos[i] = newPos[i] + refPixel;
     }
 
-    for (int i = 0; i < newPos.size(); i++) //correction
+    for (unsigned i = 0; i < newPos.size(); i++) //correction
     {
         biggestY = (newPos[i].getY() > biggestY) ? newPos[i].getY() : biggestY;
         biggestX = (newPos[i].getX() > biggestX) ? newPos[i].getX() : biggestX;
@@ -211,7 +208,7 @@ void Logic::rotateTetromino(){
 
     int modY = biggestYRef - biggestY;
     int modX = biggestXRef - biggestX;
-    for (int i = 0; i < newPos.size(); i++)
+    for (unsigned i = 0; i < newPos.size(); i++)
     {   
         newPos[i].modX(modX);
         newPos[i].modY(modY);
@@ -221,7 +218,7 @@ void Logic::rotateTetromino(){
     
     do {
         invalidMove = false;
-        for (int i = 0; i < newPos.size(); i++)
+        for (unsigned i = 0; i < newPos.size(); i++)
         {   
             if (newPos[i].getX() < 0)
             {
@@ -231,7 +228,7 @@ void Logic::rotateTetromino(){
         }
         if(invalidMove)
         {
-            for (int i = 0; i < newPos.size(); i++)
+            for (unsigned i = 0; i < newPos.size(); i++)
             {   
                 newPos[i].modX(correction);
             }
@@ -240,7 +237,7 @@ void Logic::rotateTetromino(){
     while(invalidMove);
 
     invalidMove = false;
-    for (int i = 0; i < newPos.size(); i++)
+    for (unsigned i = 0; i < newPos.size(); i++)
     {
         if (logicMatrix[newPos[i].getX() + logicX * newPos[i].getY()] == true) //deleting another piece
         {
@@ -259,15 +256,14 @@ void Logic::rotateTetromino(){
 void Logic::deleteRow(){
     vector<int> rowsToCheck, rowsToDelete;
     bool canBeDeleted;
-    int i;
-    for (int i = 0; i < savedPos.size(); i++)
+    for (unsigned i = 0; i < savedPos.size(); i++)
     {
         if ((find(rowsToCheck.begin(),rowsToCheck.end(),savedPos[i].getY())) == rowsToCheck.end())
         {
             rowsToCheck.insert(rowsToCheck.end(),savedPos[i].getY());  
         }       
     }
-    for (int j = 0; j < rowsToCheck.size(); j++)
+    for (unsigned j = 0; j < rowsToCheck.size(); j++)
     {
         int jj = rowsToCheck[j];
         canBeDeleted = true;
@@ -291,7 +287,7 @@ void Logic::deleteRow(){
         CalcScore(rowsToDelete.size());
         CalcLevel();
         sort(rowsToDelete.begin(),rowsToDelete.end());
-        for (int j = 0; j < rowsToDelete.size(); j++)
+        for (unsigned j = 0; j < rowsToDelete.size(); j++)
         {
             for (int k = rowsToDelete[j]; k > 0; k--)
             {
@@ -368,11 +364,11 @@ void Logic::Overlay(){
     bool active = true;
     while (active)
     {
-        for (int i = 0; i < curr_overlay.size(); i++)
+        for (unsigned i = 0; i < curr_overlay.size(); i++)
         {
             curr_overlay[i].modY(1);
         }
-        for (int i = 0; i < curr_overlay.size(); i++)
+        for (unsigned i = 0; i < curr_overlay.size(); i++)
         {
             if (curr_overlay[i].getY() >= logicY || logicMatrix[curr_overlay[i].getX() + logicX * curr_overlay[i].getY()] == true)
             {
@@ -381,7 +377,7 @@ void Logic::Overlay(){
             }
         }    
     }
-    for (int i = 0; i < curr_overlay.size(); i++)
+    for (unsigned i = 0; i < curr_overlay.size(); i++)
     {
         curr_overlay[i].modY(-1);
     }

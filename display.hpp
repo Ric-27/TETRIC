@@ -1,9 +1,13 @@
 #include <SFML/Graphics.hpp>
-#include "logic.hpp"
 #include <chrono>
 #include <iostream>
 
 #include "config.inl"
+#include "network_declarations.inl"
+
+#include "logic.hpp"
+#include "server.hpp"
+#include "client.hpp"
 
 class Display
 {
@@ -20,23 +24,36 @@ private:
 
     int colorChanging;
     bool colorAug;
+
+    bool thread_runing;
+    Thread* networking;
     
     int level;
+
+    string player_Name;
     
     sf::RenderWindow window;
     sf::Event event;
     
-    Logic game;    
+    Logic game;
+
+    Server host;
+    Client player; 
 public:
     Display();
     void Run();
     void Events();
     void DrawTitleScreen();
+    void Draw_Multiplayer_Name_Screen();
+    void Draw_Multiplayer_Option_Screen();
+    void Draw_Multiplayer_Join_Screen();
+    void Draw_Multiplayer_Create_Screen();
     void DrawGame(vector<string>);
     void DrawPlayers(vector<string>,int,vector<string>,int,vector<string>,int);
     void DrawNext(vector<string>);
     void DrawPoints(int, int, int);
     void DrawGameOver(int, int, int);
+    void Writing();
     void DrawBackground();
     void DrawPause();
     void DrawLevelUp();

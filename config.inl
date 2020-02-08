@@ -2,7 +2,10 @@
 #define CONFIGURATION_PARAMETERS
 
 #include <string>
+#include <vector>
 #include <iostream>
+#include <chrono>
+
 using namespace std;
 // TETROMINOS //
 const int amount_of_pixels = 4;
@@ -22,7 +25,7 @@ const int height = 20;
 
 // SCREEN //
 //dimension
-const int px_factor = 40;
+const int px_factor = 15;
 const int screen_height = 22;
 const int screen_width = 39;
 //color
@@ -44,6 +47,6 @@ const int min_speed = 10;
 const int rows_to_level = 6;
 
 //spawn special
-const int count_spawn_special = 20;
+const int count_spawn_special = 15;
 
 #endif

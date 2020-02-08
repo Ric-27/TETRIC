@@ -13,7 +13,7 @@ Tetromino::Tetromino(Pixel coorZero,int argId)
 {
     active = true;
     pixels.resize(amount_of_pixels);
-    for (int i = 0; i < pixels.size(); i++)
+    for (unsigned i = 0; i < pixels.size(); i++)
     {
         pixels[i].setX(-1);
         pixels[i].setY(-1);        
@@ -202,7 +202,7 @@ Tetromino::Tetromino(Pixel coorZero,int argId)
         id = 1;
         break;
     }
-    for (int i = 1; i < pixels.size(); i++)
+    for (unsigned i = 1; i < pixels.size(); i++)
     {
         if (pixels[i].getX() == -1 && pixels[i].getY() == -1)
         {
