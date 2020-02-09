@@ -78,6 +78,7 @@ void Server::Clients_Communication(status_type& argStatus)
                         packet_send << (Uint32)players.size();
 
                         all_packet_send << s2c_new_player_info;
+                        all_packet_send << (Uint32)players.size();
                     
                         for(unsigned i = 0; i < players.size(); i ++){
                             packet_send << players[i].name;
@@ -116,7 +117,7 @@ void Server::Clients_Communication(status_type& argStatus)
                     packet_send << (*it);
 
                     for(unsigned i = 0; i < players.size(); i++){
-                        if(players[i].name == creator_name)
+                        if(players[i].name != creator_name)
                             if (socket.send(packet_send, players[i].address, client_port) != sf::Socket::Done)
                                 cout << "Server: Send error" << endl;
                     }
