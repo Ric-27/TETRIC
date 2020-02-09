@@ -84,8 +84,7 @@ void Server::Clients_Communication(status_type& argStatus)
                             packet_send << players[i].name;
                             packet_send << players[i].ready;
 
-                            all_packet_send << players[i].name;
-                            all_packet_send << players[i].ready;
+                            all_packet_send << players[i];
                         }                    
                     }
                     //Send information to client
@@ -94,7 +93,7 @@ void Server::Clients_Communication(status_type& argStatus)
                     
                     if(all_packet_send.getDataSize() > 0){
                         for(unsigned i = 0; i < players.size(); i ++){
-                            if(players[i].address != sender && players[i].address != local_ip_address)
+                            if(players[i].address != sender && players[i].name != creator_name)
                                 if (socket.send(all_packet_send, players[i].address, client_port) != sf::Socket::Done)
                                     cout << "Server: Send error" << endl;
                         }
