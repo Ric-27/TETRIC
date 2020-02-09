@@ -112,7 +112,9 @@ void Client::Lobby_Communication(status_type& argStatus){
             }
             //Check if the message is of new client info:
             case s2c_new_player_info:
+                cout << "new player" << endl; 
                 Uint32 number_of_players;
+                playing_server.players.clear();
                 packet_recv >> number_of_players;
                 for(unsigned i = 0; i < number_of_players; i ++){
                     player_info player_data;
