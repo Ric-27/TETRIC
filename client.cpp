@@ -10,7 +10,7 @@ void Client::Connect()
 {
     if (socket.bind(client_port) != sf::Socket::Done)
     {
-        cout << "Server: Connection error" << endl;
+        std::cout << "Server: Connection error" << endl;
         return;
     }
 }
@@ -51,7 +51,7 @@ void Client::ready(bool argReady){
     //Sending ready/not ready client message:
     if (socket.send(packet_send, playing_server.address, server_port) != sf::Socket::Done)
     {
-        cout << "Client: Send error" << endl;
+        std::cout << "Client: Send error" << endl;
     }
 }
 
@@ -65,7 +65,7 @@ void Client::Lobby_Communication(status_type& argStatus){
 
     string player_name;
     while(true){
-        //cout << "loop" << endl;
+        //std::cout << "loop" << endl;
          //Check if there is a message:
         if (socket.receive(packet_recv, sender, port) == Socket::Done)
         {
@@ -73,7 +73,7 @@ void Client::Lobby_Communication(status_type& argStatus){
             Uint32 infotype_value;
             //Get the buffer information:
             packet_recv >> infotype_value;
-            cout << infotype_value << endl;
+            std::cout << infotype_value << endl;
             switch (infotype_value)
             {
             case s2c_ready_ok:
@@ -88,7 +88,7 @@ void Client::Lobby_Communication(status_type& argStatus){
                     
                 (*it).ready = true;
             
-                cout << "Ready " << endl;
+                std::cout << "Ready " << endl;
                 argStatus = ready_ok;
                 
                 break;
@@ -105,14 +105,14 @@ void Client::Lobby_Communication(status_type& argStatus){
                     
                 (*it).ready = false;
             
-                cout << "Ready " << endl;
+                std::cout << "Ready " << endl;
                 argStatus = readynt_ok;
                 
                 break;
             }
             //Check if the message is of new client info:
             case s2c_new_player_info:
-                cout << "new player" << endl; 
+                std::cout << "new player" << endl; 
                 Uint32 number_of_players;
                 playing_server.players.clear();
                 packet_recv >> number_of_players;
@@ -131,7 +131,7 @@ void Client::Lobby_Communication(status_type& argStatus){
                 packet_recv >> pos_client;
                 packet_recv >> playing_server.players[pos_client];
 
-                cout << "Client update " << playing_server.players[pos_client].address << playing_server.players[pos_client].ready << endl;
+                std::cout << "Client update " << playing_server.players[pos_client].address << playing_server.players[pos_client].ready << endl;
                 argStatus = changed;
                 break;
             }
@@ -147,10 +147,11 @@ void Client::Lobby_Communication(status_type& argStatus){
                 playing_server.address = IpAddress::None;
                 argStatus = SERVER_DISCONNECTED;
                 return;
-            case SERVER_GAME_START:
-                argStatus = GAME_START;
-                return;
             */
+            case s2c_game_start:
+                argStatus = playing;
+                return;
+            
             default:
                 break;
             }
@@ -170,7 +171,7 @@ void Client::Fill_server_list()
     //Sending broadcast message for search available servers: 
     if (socket.send(packet_send, IpAddress::Broadcast, server_port) != sf::Socket::Done)
     {
-        cout << "Client: Send error" << endl;
+        std::cout << "Client: Send error" << endl;
         return;
     }
     chrono::time_point<chrono::system_clock> start = chrono::system_clock::now();
@@ -202,7 +203,7 @@ void Client::Fill_server_list()
 
                     server_list.emplace_back(server_info_recv);
                     
-                    cout << " address: " << server_list.back().address << ", SERVER OF " << server_list.back().creator_name << ", players connected: " << server_list.back().number_of_players_connected << endl;
+                    std::cout << " address: " << server_list.back().address << ", SERVER OF " << server_list.back().creator_name << ", players connected: " << server_list.back().number_of_players_connected << endl;
                 }
             }
         }
@@ -212,7 +213,7 @@ void Client::Fill_server_list()
 }
 
 //Connect to a specific game server from the available list:
-void Client::Selected_Server(const unsigned argServer, status_type& argStatus){
+void Client::Selected_Server(const unsigned argServer, status_type& argStatus, Logic& argGame){
     //Checking that the selected server is in the list:
     if(argServer > server_list.size()){
         argStatus = error;
@@ -225,11 +226,14 @@ void Client::Selected_Server(const unsigned argServer, status_type& argStatus){
     //Server connection request:
     packet_send << c2s_connection_request;
     packet_send << name;
+    for(unsigned i = 0; i < argGame.getMatrix().size(); i ++){
+        packet_send << argGame.getMatrix()[i];
+    }
     //Sending server connection request: 
     if (socket.send(packet_send, server_list[argServer-1].address, server_port) != sf::Socket::Done)
     {
         argStatus = error;
-        cout << "Client: Send error" << endl;
+        std::cout << "Client: Send error" << endl;
         return;
     }
 
@@ -270,7 +274,7 @@ void Client::Selected_Server(const unsigned argServer, status_type& argStatus){
                         playing_server.players.emplace_back(player_info{"", player_status, player_name});
                     }
                     argStatus = connected;
-                    cout << "Connected to the Server " << playing_server.address << endl;
+                    std::cout << "Connected to the Server " << playing_server.address << endl;
                     return;
                 }
             }
@@ -281,6 +285,75 @@ void Client::Selected_Server(const unsigned argServer, status_type& argStatus){
 
     argStatus = error;
     return;
+}
+
+void Client::Game_Communication(status_type& argStatus, Logic& argMatrix){
+    Send_Game(argMatrix);
+    cout << "client listening" << endl;
+    argStatus = changednt;
+    socket.setBlocking(false);
+    
+    Packet packet_recv;;
+    IpAddress sender;
+    unsigned short port;
+
+    chrono::time_point<chrono::system_clock> start = chrono::system_clock::now();
+    chrono::duration<double> elapsed_seconds;
+    
+    while(true){
+        elapsed_seconds = chrono::system_clock::now() - start;
+        if(elapsed_seconds.count() >= update_time){
+            start = chrono::system_clock::now();
+            Send_Game(argMatrix);
+            //cout << "game sending" << endl;
+        }
+        //Check if there is a message:
+        if (socket.receive(packet_recv, sender, port) == Socket::Done){
+            //Get the buffer information:
+            Uint32 infotype_value;
+
+            packet_recv >> infotype_value;
+            
+            switch ((unsigned)infotype_value)
+            {
+                case s2c_game_update:
+                    for(unsigned i = 0; i < playing_server.number_of_players_connected; i ++){
+                        packet_recv >> playing_server.players[i].name;
+                        packet_recv >> playing_server.players[i].score;
+                        string value;
+                        for (int j = 0; j < width*height; j++)
+                        {
+                            packet_recv >> value;
+                            playing_server.players[i].game[j] = value;
+                        }                 
+                    }
+                    argStatus = changed;
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+}
+
+void Client::Send_Game(Logic& argGame){
+    //Filling send buffer:
+    Packet packet_send;
+    
+    packet_send << c2s_game_update; 
+    packet_send << name;
+    packet_send << 10;
+
+    //cout << "tamaño enviado: " << argGame.getMatrix().size() << endl;
+    for(unsigned i = 0; i < argGame.getMatrix().size(); i ++){
+        packet_send << argGame.getMatrix()[i];
+    }
+    
+    //Sending board data message: 
+    if (socket.send(packet_send, playing_server.address, server_port) != sf::Socket::Done)
+    {
+        cout << "Client: Send error" << endl;
+    }   
 }
 
 Client::~Client()

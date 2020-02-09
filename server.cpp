@@ -2,7 +2,8 @@
 
 Server::Server():
     creator_name(""),
-    players_connected(1)
+    players_connected(1),
+    start_able(false)
 {
     local_ip_address = IpAddress::getLocalAddress();
     players.emplace_back(player_info{local_ip_address, true});
@@ -163,6 +164,129 @@ void Server::Clients_Communication(status_type& argStatus)
                     break;
             }
         std::cout << "Received bytes from " << sender << " on port " << port << std::endl;
+        }
+    }
+}
+
+bool Server::Check_Start_ability(){
+    bool canStart = true;
+    if (players.size() == 1) canStart = false;
+  
+    for (unsigned i = 1; i < players.size(); i++) {
+        if (!players[i].ready) {
+            //std::cout << "Can't start a game, some players aren't ready!!!" << endl;
+            canStart = false;
+            break;
+        }
+    }
+    return canStart;
+}
+
+void Server::Start() {
+    if(Check_Start_ability())
+    {
+        Packet packet_send;
+
+        packet_send << s2c_game_start;
+
+        for (unsigned i = 0; i < players.size(); i++) 
+        {
+            if (players[i].name != creator_name)
+                if (socket.send(packet_send, players[i].address, client_port) != sf::Socket::Done)
+                    cout << "Server: Send error" << endl;
+        }
+    } else {
+        cout << "can't start" << endl;
+    }
+}
+
+void Server::Send_Games(Logic& argGame)
+{
+    //Filling send buffer:
+    Packet packet_send;
+    
+    packet_send << s2c_game_update;
+
+    for(unsigned i = 0; i < players.size(); i ++){
+        if(players[i].name == creator_name)
+        {
+            players[i].score = argGame.getScore();
+        }
+        packet_send << players[i].name;
+        packet_send << players[i].score;
+
+        for(unsigned j = 0; j < width*height; j ++){
+                if(players[i].name == creator_name)
+                    players[i].game[i] = argGame.getMatrix()[j];
+                packet_send << players[i].game[j];
+        }
+    }
+    
+    for(unsigned i = 0; i < players.size(); i ++){
+        if(players[i].name != creator_name)
+        {
+            //Sending board data message: 
+            if (socket.send(packet_send, players[i].address, client_port) != sf::Socket::Done)
+            {
+                cout << "Client: Send error" << endl;
+            }
+        }   
+    }
+}
+
+void Server::Game_Communication(status_type& argStatus, Logic& argMatrix)
+{
+    cout << "server listening" << endl;
+    argStatus = changednt;
+    socket.setBlocking(false);
+    
+    Packet packet_recv;
+    IpAddress sender;
+    unsigned short port;
+    string player_name;
+
+    chrono::time_point<chrono::system_clock> start = chrono::system_clock::now();
+    chrono::duration<double> elapsed_seconds;
+    
+    while(true){
+        elapsed_seconds = chrono::system_clock::now() - start;
+        if(elapsed_seconds.count() >= update_time){
+            start = chrono::system_clock::now();
+            //Send_Games(argMatrix);
+        }
+        //Check if there is a message:
+        if (socket.receive(packet_recv, sender, port) == Socket::Done){
+            cout << "recibi" << endl;
+            Uint32 infotype_value;
+            //Get the buffer information:
+            packet_recv >> infotype_value;
+            
+            switch ((unsigned) infotype_value)
+            {
+                case c2s_game_update:
+                    player_name = "";
+                    packet_recv >> player_name;
+                    cout << player_name << endl;
+                    vector<player_info>::iterator it = find(players.begin(), players.end(), player_info{sender, false, player_name});
+                    if(it == players.end())
+                    {
+                        cout << "no encontrado" << endl;
+                        break;
+                    }
+                    
+                    packet_recv >> (*it).score;
+                    cout << (*it).score << endl;
+                    string value;
+                    unsigned size = (height+amount_of_pixels)*width;
+                    cout << "tamaño a recibir: " << size << endl;
+                    (*it).game.clear();
+                    for(unsigned i = 0; i < size; i++){
+                            value = "";
+                            packet_recv >> value;
+                            (*it).game.emplace_back(value);
+                    }
+                    break;
+            }
         }
     }
 }

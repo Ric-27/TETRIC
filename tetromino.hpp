@@ -1,3 +1,6 @@
+#ifndef TETROMINO
+#define TETROMINO
+
 #include <random>
 #include <cstdlib>
 #include <vector>
@@ -23,3 +26,4 @@ public:
     void deactivate();
     ~Tetromino();
 };
+#endif

@@ -1,3 +1,6 @@
+#ifndef LOGIC
+#define LOGIC
+
 #include <vector>
 #include <string>
 #include <algorithm>
@@ -67,3 +70,4 @@ public:
 
     ~Logic();
 };
+#endif

@@ -101,7 +101,7 @@ void Display::Run()
             }            
             Draw_Multiplayer_Join_Screen();
             break;
-         case 8:
+         case 8: //being a guest in a lobby
             if (!thread_runing)
             { 
                player.Set_Name(player_Name);
@@ -109,8 +109,63 @@ void Display::Run()
                networking->launch();
                thread_runing = true;
             }
-            //cout << thread_runing << endl;
+            if (my_status == playing)
+            {
+               game.setStatus(10);
+               thread_runing = false;
+            }
+            
             Draw_Lobby();
+            break;
+         case 9: //playing multiplayer as host
+            if(!thread_runing){
+               networking->terminate();
+               networking = new Thread([&] () {host.Game_Communication(my_status,game);});
+               networking->launch();
+               thread_runing = true;
+            }
+            counterGravity++;
+            DrawBackground();
+            DrawGame(game.getMatrix());
+            //cout << "player 1: " << host.Get_Players()[1].game.size() << endl;
+            //cout << "host: " << game.getMatrix().size() << endl;
+            DrawPlayers(host.Get_Players()[1].game,host.Get_Players()[1].score,game.getMatrix(),game.getScore(),game.getMatrix(),game.getScore());
+            DrawNext(game.getNext());
+            DrawPoints(game.getScore(),game.getRows(),game.getLevel());
+            if (level != game.getLevel())
+            {
+               sleepCont++;
+               DrawLevelUp();
+            }           
+            if (counterGravity > game.GetSlowness()) 
+            {
+               counterGravity = 0;
+               game.moveTetromino('d');
+            }            
+            break;
+         case 10: //playing multiplayer as client
+            if(!thread_runing){
+               networking->terminate();
+               networking = new Thread([&] () {player.Game_Communication(my_status,game);});
+               networking->launch();
+               thread_runing = true;
+            }
+            counterGravity++;
+            DrawBackground();
+            DrawGame(game.getMatrix());
+            //DrawPlayers(host.Get_Players()[0].game,host.Get_Players()[0].score,game.getMatrix(),game.getScore(),game.getMatrix(),game.getScore());
+            DrawNext(game.getNext());
+            DrawPoints(game.getScore(),game.getRows(),game.getLevel());
+            if (level != game.getLevel())
+            {
+               sleepCont++;
+               DrawLevelUp();
+            }           
+            if (counterGravity > game.GetSlowness()) 
+            {
+               counterGravity = 0;
+               game.moveTetromino('d');
+            }            
             break;
          default:
             break;
@@ -242,6 +297,17 @@ void Display::Events()
                      game.setStatus(5);
                      break;
 
+                  case sf::Keyboard::Return: 
+                     host.Start();
+                     if(host.Check_Start_ability())
+                     {
+                        game.CleanUp();
+                        counterGravity = 0;
+                        thread_runing = false;
+                        game.setStatus(9);
+                     }
+                     break;
+
                   default:
                      break;
                   }
@@ -266,7 +332,7 @@ void Display::Events()
                         window.display();
                         networking->terminate();
                         thread_runing = false;
-                        player.Selected_Server(server_choosen,my_status);
+                        player.Selected_Server(server_choosen,my_status,game);
                         game.setStatus(8);
                      }
                      break;
@@ -787,6 +853,16 @@ void Display::Draw_Multiplayer_Create_Screen()
    text.setString("esc     back");
    text.setPosition((0.5* pixel_factor), ((window_height - 2)*pixel_factor));   
    window.draw(text);
+   
+   if(host.Check_Start_ability())
+   {   
+      sf::RectangleShape pixel(sf::Vector2f(10 * pixel_factor, 1.5 * pixel_factor));
+      pixel.setOutlineThickness(-3.f);
+      pixel.setOutlineColor(sf::Color(legend_text_color,legend_text_color,legend_text_color,colorChanging));
+      pixel.setPosition(((window_width - 10.8)* pixel_factor), ((window_height - 1.7)*pixel_factor));
+      pixel.setFillColor(sf::Color(background_game_color,background_game_color,background_game_color,255));  
+      window.draw(pixel);
+   }
 
    text.setString("enter     start");
    text.setPosition(((window_width - 10.5)* pixel_factor), ((window_height - 2)*pixel_factor));

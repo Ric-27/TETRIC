@@ -1,5 +1,9 @@
+#ifndef CLIENT
+#define CLIENT
+
 #include "config.inl"
 #include "network_declarations.inl"
+#include "logic.hpp"
 
 class Client
 {
@@ -18,8 +22,12 @@ public:
     void Connect();
     void ready(bool);
     void Lobby_Communication(status_type&);
+    void Game_Communication(status_type&, Logic&);
+    void Send_Game(Logic&);
     server_info Get_playing_server();
     vector<server_info> Get_server_list();
-    void Selected_Server(const unsigned, status_type&);
+    void Selected_Server(const unsigned, status_type&, Logic&);
     ~Client();
 };
+
+#endif

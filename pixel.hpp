@@ -1,3 +1,6 @@
+#ifndef PIXEL
+#define PIXEL
+
 #include "config.inl"
 class Pixel
 {
@@ -30,3 +33,4 @@ public:
     }
     ~Pixel();
 };
+#endif

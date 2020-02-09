@@ -11,6 +11,7 @@ const unsigned short client_port = 2100;
 
 const unsigned short search_time = 10;
 const unsigned short connection_time = 5;
+const unsigned short update_time = 2;
 
 enum info_type{
     c2s_info_request,
@@ -23,7 +24,10 @@ enum info_type{
     s2c_ready_ok,
     s2c_readynt_ok,
     s2c_update_player,
-    s2c_new_player_info
+    s2c_new_player_info,
+    s2c_game_start,
+    s2c_game_update,
+    c2s_game_update
 };
 
 enum status_type {
@@ -36,7 +40,8 @@ enum status_type {
     ready_error,
     readynt_error,
     ready_ok,
-    readynt_ok
+    readynt_ok,
+    playing
 };
 
 struct player_info {

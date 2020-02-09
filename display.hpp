@@ -1,3 +1,6 @@
+#ifndef DISPLAY
+#define DISPLAY
+
 #include <SFML/Graphics.hpp>
 #include <chrono>
 #include <iostream>
@@ -67,3 +70,4 @@ public:
     void ChangeColor();
     ~Display();
 };
+#endif
