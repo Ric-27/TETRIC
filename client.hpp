@@ -16,6 +16,8 @@ public:
     void Set_Status(bool);
     void Fill_server_list();
     void Connect();
+    void ready(bool);
+    void Lobby_Communication(status_type&);
     server_info Get_playing_server();
     vector<server_info> Get_server_list();
     void Selected_Server(const unsigned, status_type&);

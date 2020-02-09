@@ -9,18 +9,19 @@ Display::Display():
    window(sf::VideoMode(window_width * pixel_factor, window_height * pixel_factor), "TETRIC"),
    game(xSize, ySize)
 {
-   networking = nullptr;
-   thread_runing = false;
    level = game.getLevel();
    sleepCont = 0;
    colorChanging = 0;
    colorAug = true;
    counterGravity = 0;
+   
    player_Name = "";
    server_choosen = 0;
    reload = false;
    display_ready = false;
-   my_status = not_changed;
+   my_status = changednt;
+   networking = nullptr;
+   thread_runing = false;
 }
 void Display::Run()
 {
@@ -101,7 +102,15 @@ void Display::Run()
             Draw_Multiplayer_Join_Screen();
             break;
          case 8:
-            Draw_Lobby();   
+            if (!thread_runing)
+            { 
+               player.Set_Name(player_Name);
+               networking = new Thread([&] () {player.Lobby_Communication(my_status);});
+               networking->launch();
+               thread_runing = true;
+            }
+            //cout << thread_runing << endl;
+            Draw_Lobby();
             break;
          default:
             break;
@@ -256,6 +265,7 @@ void Display::Events()
                         Draw_Loading();
                         window.display();
                         networking->terminate();
+                        thread_runing = false;
                         player.Selected_Server(server_choosen,my_status);
                         game.setStatus(8);
                      }
@@ -316,6 +326,7 @@ void Display::Events()
                   case sf::Keyboard::Return: //change status
                   {
                      display_ready = !display_ready;
+                     player.ready(display_ready);
                      break;
                   }
                   default:

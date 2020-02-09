@@ -17,7 +17,13 @@ enum info_type{
     c2s_connection_request,
     s2c_info,
     s2c_connection_error,
-    s2c_connection_sucess
+    s2c_connection_sucess,
+    c2s_ready,
+    c2s_readynt,
+    s2c_ready_ok,
+    s2c_readynt_ok,
+    s2c_update_player,
+    s2c_new_player_info
 };
 
 enum status_type {
@@ -25,9 +31,12 @@ enum status_type {
     readynt,
     connected,
     not_connected,
-    new_player_info,
     changed,
-    not_changed
+    changednt,
+    ready_error,
+    readynt_error,
+    ready_ok,
+    readynt_ok
 };
 
 struct player_info {
@@ -39,6 +48,8 @@ struct player_info {
     bool operator == (player_info other_player){
        return name == other_player.name;
     };
+    friend Packet& operator <<(sf::Packet& packet, player_info& argPlayerInfo);
+    friend Packet& operator >>(sf::Packet& packet, player_info& argPlayerInfo);
 };
 struct server_info{
     IpAddress address;
