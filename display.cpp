@@ -28,7 +28,8 @@ void Display::Run()
    while (window.isOpen())
    {
       Events();
-      window.clear();      
+      window.clear();
+      game.updateMatrix();     
       switch (game.getStatus())
       {
          case 0:
@@ -76,7 +77,7 @@ void Display::Run()
          case 6: //lobby server
             if (!thread_runing)
             {
-               host.Set_Creator_name(player_Name);
+               host.Set_Creator_name(player_Name,game);
                host.Connect();
                networking = new Thread([&] () { host.Clients_Communication(my_status);});
                networking->launch();
@@ -153,7 +154,8 @@ void Display::Run()
             counterGravity++;
             DrawBackground();
             DrawGame(game.getMatrix());
-            //DrawPlayers(host.Get_Players()[0].game,host.Get_Players()[0].score,game.getMatrix(),game.getScore(),game.getMatrix(),game.getScore());
+            //cout << "host: " << host.Get_Players()[0].game.size() << endl;
+            DrawPlayers(player.Get_playing_server().players[0].game,player.Get_playing_server().players[0].score,game.getMatrix(),game.getScore(),game.getMatrix(),game.getScore());
             DrawNext(game.getNext());
             DrawPoints(game.getScore(),game.getRows(),game.getLevel());
             if (level != game.getLevel())
@@ -395,6 +397,56 @@ void Display::Events()
                      player.ready(display_ready);
                      break;
                   }
+                  default:
+                     break;
+               }
+               break;
+            case 9: //Running
+               switch (event.key.code)
+               {
+                  case sf::Keyboard::Q: //Quit
+                     window.close();
+                     break;
+                  case sf::Keyboard::Up: // Rotate
+                     game.rotateTetromino();
+                     break;
+                  case sf::Keyboard::Right: //Move Right
+                     game.moveTetromino('r');
+                     break;
+                  case sf::Keyboard::Left: //Move Left
+                     game.moveTetromino('l');
+                     break;
+                  case sf::Keyboard::Down: //SoftDrop
+                     game.moveTetromino('d');
+                     break;
+                  case sf::Keyboard::Space: //HardDrop
+                     game.ActivateHardDrop();
+                     break;
+                  default:
+                     break;
+               }
+               break;
+            case 10: //Running
+               switch (event.key.code)
+               {
+                  case sf::Keyboard::Q: //Quit
+                     window.close();
+                     break;
+                  case sf::Keyboard::Up: // Rotate
+                     game.rotateTetromino();
+                     break;
+                  case sf::Keyboard::Right: //Move Right
+                     game.moveTetromino('r');
+                     break;
+                  case sf::Keyboard::Left: //Move Left
+                     game.moveTetromino('l');
+                     break;
+                  case sf::Keyboard::Down: //SoftDrop
+                     game.moveTetromino('d');
+                     break;
+                  case sf::Keyboard::Space: //HardDrop
+                     game.ActivateHardDrop();
+                     break;
                   default:
                      break;
                }

@@ -10,7 +10,7 @@ void Client::Connect()
 {
     if (socket.bind(client_port) != sf::Socket::Done)
     {
-        std::cout << "Server: Connection error" << endl;
+        std::cout << "Client: Connection error" << endl;
         return;
     }
 }
@@ -112,7 +112,7 @@ void Client::Lobby_Communication(status_type& argStatus){
             }
             //Check if the message is of new client info:
             case s2c_new_player_info:
-                std::cout << "new player" << endl; 
+                //std::cout << "new player" << endl; 
                 Uint32 number_of_players;
                 playing_server.players.clear();
                 packet_recv >> number_of_players;
@@ -120,6 +120,12 @@ void Client::Lobby_Communication(status_type& argStatus){
                     player_info player_data;
                     packet_recv >> player_data;
                     playing_server.players.emplace_back(player_data);
+                    for(unsigned i = 0; i < width*(height+amount_of_pixels); i++)
+                    {
+                            string value = "";
+                            packet_recv >> value;
+                            playing_server.players[i].game.emplace_back(value);
+                    }
                 }
                 argStatus = changed;
             break;
@@ -171,9 +177,10 @@ void Client::Fill_server_list()
     //Sending broadcast message for search available servers: 
     if (socket.send(packet_send, IpAddress::Broadcast, server_port) != sf::Socket::Done)
     {
-        std::cout << "Client: Send error" << endl;
+        std::cout << "Client: Send error!!" << endl;
         return;
     }
+
     chrono::time_point<chrono::system_clock> start = chrono::system_clock::now();
     chrono::duration<double> elapsed_seconds;
     //Setting non blocking socket:
@@ -264,14 +271,31 @@ void Client::Selected_Server(const unsigned argServer, status_type& argStatus, L
                 //Check if the message is a server connection response success:
                 case s2c_connection_sucess:
                     playing_server.address = server_list[argServer - 1].address;
+
                     packet_recv >> playing_server.number_of_players_connected;
+                    cout << playing_server.number_of_players_connected << endl;
                 
                     for(unsigned i = 0; i < playing_server.number_of_players_connected; i ++){
                         string player_name;
                         bool player_status;
+
                         packet_recv >> player_name;
+                        cout << player_name << endl;
+
                         packet_recv >> player_status;
+                        cout << player_status << endl;
+
                         playing_server.players.emplace_back(player_info{"", player_status, player_name});
+                        playing_server.players[i].game.clear();
+                        
+                        string value;
+                        for (int j = 0; j < width*(height + amount_of_pixels); j++)
+                        {
+                            //cout << j << " ";
+                            packet_recv >> value;
+                            playing_server.players[i].game.emplace_back(value);
+                        }
+                        cout << endl;
                     }
                     argStatus = connected;
                     std::cout << "Connected to the Server " << playing_server.address << endl;
@@ -317,16 +341,19 @@ void Client::Game_Communication(status_type& argStatus, Logic& argMatrix){
             switch ((unsigned)infotype_value)
             {
                 case s2c_game_update:
+                    cout << "cthere 1" << endl;
                     for(unsigned i = 0; i < playing_server.number_of_players_connected; i ++){
+                        playing_server.players[i].game.clear();
                         packet_recv >> playing_server.players[i].name;
                         packet_recv >> playing_server.players[i].score;
                         string value;
-                        for (int j = 0; j < width*height; j++)
+                        for (int j = 0; j < width*(height + amount_of_pixels); j++)
                         {
                             packet_recv >> value;
-                            playing_server.players[i].game[j] = value;
+                            playing_server.players[i].game.emplace_back(value);
                         }                 
                     }
+                    cout << "cthere 2" << endl;
                     argStatus = changed;
                     break;
                 default:
@@ -337,18 +364,19 @@ void Client::Game_Communication(status_type& argStatus, Logic& argMatrix){
 }
 
 void Client::Send_Game(Logic& argGame){
+    cout << "chere 1" << endl;
     //Filling send buffer:
     Packet packet_send;
     
     packet_send << c2s_game_update; 
     packet_send << name;
-    packet_send << 10;
+    packet_send << argGame.getScore();
 
     //cout << "tamaño enviado: " << argGame.getMatrix().size() << endl;
     for(unsigned i = 0; i < argGame.getMatrix().size(); i ++){
         packet_send << argGame.getMatrix()[i];
     }
-    
+    cout << "chere 2" << endl;
     //Sending board data message: 
     if (socket.send(packet_send, playing_server.address, server_port) != sf::Socket::Done)
     {

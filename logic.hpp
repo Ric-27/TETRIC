@@ -41,7 +41,7 @@ private:
     int logicY;
 public:
     Logic(int argRows, int argColumns);
-    vector<string> getMatrix();
+    vector<string> getMatrix() const;
     vector<string> getNext();
     int getScore();
     int getLevel();

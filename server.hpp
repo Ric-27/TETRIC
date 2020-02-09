@@ -20,7 +20,7 @@ public:
     vector<player_info> Get_Players();
     void Clients_Communication(status_type&);
     void Connect();
-    void Set_Creator_name(string);
+    void Set_Creator_name(string, Logic&);
     void Start();
     bool Check_Start_ability();
     void Send_Games(Logic&);

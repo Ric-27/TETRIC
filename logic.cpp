@@ -28,8 +28,7 @@ Logic::Logic(int argX, int argY){
     nextPiece = newPiece;
     newTetromino();
 }
-vector<string> Logic::getMatrix(){
-    updateMatrix();
+vector<string> Logic::getMatrix() const{
     return colorMatrix;
 }
 vector<string> Logic::getNext(){

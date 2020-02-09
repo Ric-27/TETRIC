@@ -11,7 +11,7 @@ const unsigned short client_port = 2100;
 
 const unsigned short search_time = 10;
 const unsigned short connection_time = 5;
-const unsigned short update_time = 2;
+const double update_time = 0.2;
 
 enum info_type{
     c2s_info_request,
