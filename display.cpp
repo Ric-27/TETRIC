@@ -19,6 +19,7 @@ Display::Display():
    player_Name = "";
    server_choosen = 0;
    reload = false;
+   display_ready = false;
    my_status = not_changed;
 }
 void Display::Run()
@@ -303,15 +304,18 @@ void Display::Events()
             case 8: //Lobby
                switch (event.key.code)
                {
+                  case sf::Keyboard::Escape: //back
+                     reload = true;
+                     game.setStatus(7);
+                     break;
+                  
                   case sf::Keyboard::Q: //Quit
                      window.close();
                      break;
                   
-                  case sf::Keyboard::Return: //Quit
+                  case sf::Keyboard::Return: //change status
                   {
-                     cout << player.Get_Status() << endl;
-                     bool temp = (player.Get_Status() == true) ? false : true;
-                     player.Set_Status(temp);
+                     display_ready = !display_ready;
                      break;
                   }
                   default:
@@ -774,7 +778,7 @@ void Display::Draw_Multiplayer_Create_Screen()
    window.draw(text);
 
    text.setString("enter     start");
-   text.setPosition(((window_width - 9)* pixel_factor), ((window_height - 2)*pixel_factor));
+   text.setPosition(((window_width - 10.5)* pixel_factor), ((window_height - 2)*pixel_factor));
    window.draw(text);
 }
 void Display::Draw_Lobby()
@@ -830,13 +834,14 @@ void Display::Draw_Lobby()
    text.setPosition((0.5* pixel_factor), ((window_height - 2)*pixel_factor));   
    window.draw(text);
 
-   if (player.Get_Status() == true)
+   if (!display_ready)
    {
       text.setString("enter     ready");
+      text.setPosition(((window_width - 10.5)* pixel_factor), ((window_height - 2)*pixel_factor));
    } else {
       text.setString("enter     readynt");
-   }
-   text.setPosition(((window_width - 10.5)* pixel_factor), ((window_height - 2)*pixel_factor));
+      text.setPosition(((window_width - 12.5)* pixel_factor), ((window_height - 2)*pixel_factor));
+   }   
    window.draw(text);
 }
 void Display::Draw_Multiplayer_Join_Screen()

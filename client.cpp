@@ -2,6 +2,8 @@
 
 Client::Client(/* args */)
 {
+    name = "";
+    status = false;
 }
 
 void Client::Connect()

@@ -30,6 +30,7 @@ private:
 
     short server_choosen;
     bool reload;
+    bool display_ready;
     status_type my_status;
     
     int level;
