@@ -17,6 +17,9 @@ Display::Display():
    colorAug = true;
    counterGravity = 0;
    player_Name = "";
+   server_choosen = 0;
+   reload = false;
+   my_status = not_changed;
 }
 void Display::Run()
 {
@@ -28,6 +31,8 @@ void Display::Run()
       {
          case 0:
             DrawTitleScreen();
+            //Draw_Multiplayer_Join_Screen();
+            //Draw_Loading();
             break;
          case 1:         
             counterGravity++;
@@ -66,18 +71,18 @@ void Display::Run()
          case 5:
             Draw_Multiplayer_Option_Screen();
             break;
-         case 6:
+         case 6: //lobby server
             if (!thread_runing)
             {
                host.Set_Creator_name(player_Name);
                host.Connect();
-               networking = new Thread([&] () { host.Clients_Communication();});
+               networking = new Thread([&] () { host.Clients_Communication(my_status);});
                networking->launch();
                thread_runing = true;
             }
             Draw_Multiplayer_Create_Screen();
             break;
-         case 7:
+         case 7: //server list
             if (!thread_runing)
             {
                player.Set_Name(player_Name);
@@ -86,7 +91,18 @@ void Display::Run()
                networking->launch();
                thread_runing = true;
             }
+            if (reload)
+            {
+               networking->terminate();
+               networking->launch();
+               reload = false;
+            }            
             Draw_Multiplayer_Join_Screen();
+            break;
+         case 8:
+            Draw_Lobby();   
+            break;
+         default:
             break;
       }
       window.display();
@@ -96,70 +112,215 @@ void Display::Events()
 {
    while (window.pollEvent(event))
    {
-      if (event.type == sf::Event::Closed)
-      window.close();
-      if (game.getStatus() == 4)
-      {
-         Writing();
-      } else if (event.type == sf::Event::KeyPressed) {
-         switch (event.key.code)
+      if (event.type == sf::Event::Closed) window.close();
+      if (event.type == sf::Event::KeyPressed) {
+         switch (game.getStatus())
          {
-         case sf::Keyboard::S: //Start Game
-            if (game.getStatus() == 0) game.setStatus(1);
-            break;
-         case sf::Keyboard::Q: //Quit
-            window.close();
-            break;
-         case sf::Keyboard::P: //Pause
-            if (game.getStatus() == 1)
-               game.setStatus(2);
-            else if (game.getStatus() == 2) 
-               game.setStatus(1);
-            break;
-         case sf::Keyboard::M: //Multiplayer
-            if (game.getStatus() == 1)
-               game.setStatus(4);
-            break;
-         case sf::Keyboard::C: //Create Server
-            if (game.getStatus() == 5)
-               game.setStatus(6);
-            break;
-         case sf::Keyboard::J: //Join Server
-            if (game.getStatus() == 5)
-               game.setStatus(7);
-            break;
-         case sf::Keyboard::R: //Restart
-            if (game.getStatus() == 3){
-               level = 0;
-               game.CleanUp();
-            }              
-            break;
-         case sf::Keyboard::Escape: 
-            if(game.getStatus() == 5) game.setStatus(4);
-            if(game.getStatus() == 6) game.setStatus(5);
-            if(game.getStatus() == 7) game.setStatus(5);
-            break;
-         case sf::Keyboard::Return:
-            //game.setStatus(5);
-            break;
-         case sf::Keyboard::Up: // Rotate
-            if (game.getStatus() == 1) game.rotateTetromino();
-            break;
-         case sf::Keyboard::Right: //Move Right
-            if (game.getStatus() == 1) game.moveTetromino('r');
-            break;
-         case sf::Keyboard::Left: //Move Left
-            if (game.getStatus() == 1) game.moveTetromino('l');
-            break;
-         case sf::Keyboard::Down: //SoftDrop
-            if (game.getStatus() == 1) game.moveTetromino('d');
-            break;
-         case sf::Keyboard::Space: //HardDrop
-            if (game.getStatus() == 1) game.ActivateHardDrop();
-            break;
-         default:
-            break;
-         }      
+            case 0: //tittle screen
+               switch (event.key.code)
+               {
+               case sf::Keyboard::S: //Start Game
+                  game.setStatus(1);
+                  break;
+               case sf::Keyboard::Q: //Quit
+                  window.close();
+                  break;
+               default:
+                  break;
+               }
+               break;
+
+            case 1: //Running
+               switch (event.key.code)
+               {
+                  case sf::Keyboard::Q: //Quit
+                     window.close();
+                     break;
+                  case sf::Keyboard::P: //Pause
+                     game.setStatus(2);
+                     break;
+                  case sf::Keyboard::M: //Multiplayer
+                     game.setStatus(4);
+                     break;
+                  case sf::Keyboard::Up: // Rotate
+                     game.rotateTetromino();
+                     break;
+                  case sf::Keyboard::Right: //Move Right
+                     game.moveTetromino('r');
+                     break;
+                  case sf::Keyboard::Left: //Move Left
+                     game.moveTetromino('l');
+                     break;
+                  case sf::Keyboard::Down: //SoftDrop
+                     game.moveTetromino('d');
+                     break;
+                  case sf::Keyboard::Space: //HardDrop
+                     game.ActivateHardDrop();
+                     break;
+                  default:
+                     break;
+               }
+               break;
+
+            case 2: //Pause
+               switch (event.key.code)
+               {
+                  case sf::Keyboard::P: //Pause
+                     game.setStatus(1);
+                     break;
+                  case sf::Keyboard::Q: //Quit
+                     window.close();
+                     break;
+                  default:
+                     break;
+               }
+               break;
+
+            case 3: //gameover
+               switch (event.key.code)
+               {
+                  case sf::Keyboard::R: //Restart
+                     level = 0;
+                     game.CleanUp();              
+                     break;
+
+                  case sf::Keyboard::Q: //Quit
+                     window.close();
+                     break;
+                  
+                  default:
+                     break;
+               }
+               break;
+
+            case 4: //writing name
+               Writing();
+               break;
+            
+            case 5: //multiplayer screen
+               switch (event.key.code)
+               {
+                  case sf::Keyboard::C: //Create Server
+                     game.setStatus(6);
+                     break;
+
+                  case sf::Keyboard::J: //Join Server
+                     game.setStatus(7);
+                     break;
+
+                  case sf::Keyboard::Q: //Quit
+                     window.close();
+                     break;
+
+                  case sf::Keyboard::Escape: 
+                     game.setStatus(4);
+                     break;
+
+                  default:
+                     break;
+               }
+               break;
+            
+            case 6: //host server screen
+               switch (event.key.code)
+                  {
+                  case sf::Keyboard::Q: //Quit
+                     window.close();
+                     break;
+
+                  case sf::Keyboard::Escape: 
+                     game.setStatus(5);
+                     break;
+
+                  default:
+                     break;
+                  }
+               break;
+
+            case 7: //join server screen
+               switch (event.key.code)
+               {
+                  case sf::Keyboard::Q: //Quit
+                     window.close();
+                     break;
+
+                  case sf::Keyboard::Escape: //back
+                     game.setStatus(5);
+                     break;
+
+                  case sf::Keyboard::Return: //back
+                     if(server_choosen != 0)
+                     {
+                        window.clear();
+                        Draw_Loading();
+                        window.display();
+                        networking->terminate();
+                        player.Selected_Server(server_choosen,my_status);
+                        game.setStatus(8);
+                     }
+                     break;
+
+                  case sf::Keyboard::R: //reload 
+                     reload = true;           
+                     break;
+
+                  case sf::Keyboard::Num1: 
+                     if(player.Get_server_list().size() >= 1) server_choosen = 1;
+                     break;
+                  
+                  case sf::Keyboard::Num2: 
+                     if(player.Get_server_list().size() >= 2) server_choosen = 2;
+                     break;
+
+                  case sf::Keyboard::Num3: 
+                     if(player.Get_server_list().size() >= 3) server_choosen = 3;
+                     break;
+
+                  case sf::Keyboard::Num4: 
+                     if(player.Get_server_list().size() >= 4) server_choosen = 4;
+                     break;
+
+                  case sf::Keyboard::Num5: 
+                     if(player.Get_server_list().size() >= 5) server_choosen = 5;
+                     break;
+
+                  case sf::Keyboard::Num6: 
+                     if(player.Get_server_list().size() >=6) server_choosen = 6;
+                     break;
+
+                  case sf::Keyboard::Num7: 
+                     if(player.Get_server_list().size() >= 7) server_choosen = 7;
+                     break;
+
+                  case sf::Keyboard::Num8: 
+                     if(player.Get_server_list().size() >= 8) server_choosen = 8;
+                     break;
+
+                  default:
+                     break;
+               }
+               break;
+            case 8: //Lobby
+               switch (event.key.code)
+               {
+                  case sf::Keyboard::Q: //Quit
+                     window.close();
+                     break;
+                  
+                  case sf::Keyboard::Return: //Quit
+                  {
+                     cout << player.Get_Status() << endl;
+                     bool temp = (player.Get_Status() == true) ? false : true;
+                     player.Set_Status(temp);
+                     break;
+                  }
+                  default:
+                     break;
+               }
+               break;
+            default:
+               break;
+         }
       }
    } 
 }
@@ -299,6 +460,21 @@ void Display::DrawPause()
    text.setCharacterSize(pixel_factor * 10);
    text.setFillColor(sf::Color(colorChanging,colorChanging,colorChanging,255));
    text.setPosition((window_width/2 * pixel_factor) - (15.5*pixel_factor), (4*pixel_factor));
+   window.draw(text);
+}
+void Display::Draw_Loading()
+{
+   sf::Font font;
+   if (!font.loadFromFile("font.ttf"))
+   {
+      cout << "font load error..." << endl;
+   }
+   sf::Text text;
+   text.setFont(font);
+   text.setString("Loading");
+   text.setCharacterSize(pixel_factor * 7);
+   text.setFillColor(sf::Color(legend_text_color,legend_text_color,legend_text_color,255));
+   text.setPosition((window_width/2 * pixel_factor) - (12.5*pixel_factor), (5*pixel_factor));
    window.draw(text);
 }
 void Display::DrawLevelUp()
@@ -574,38 +750,22 @@ void Display::Draw_Multiplayer_Create_Screen()
 
    text.setCharacterSize(pixel_factor * 1.5);
 
-   text.setString(player_Name);
-   text.setPosition((2 * pixel_factor), (9*pixel_factor));
-   window.draw(text);
+   for (unsigned i = 0; i < host.Get_Players().size(); i++)
+   {
+      text.setString(host.Get_Players()[i].name);
+      text.setPosition((2 * pixel_factor), ((8 + (i * 1.5))*pixel_factor));
+      window.draw(text);
 
-   text.setString("ready");
-   text.setPosition((20 * pixel_factor), (9*pixel_factor));
-   window.draw(text);
-   /*
-   text.setString("player 1");
-   text.setPosition((2 * pixel_factor), (10.5*pixel_factor));
-   window.draw(text);
+      if (host.Get_Players()[i].ready == true)
+      {
+         text.setString("ready");
+      } else {
+         text.setString("readynt");
+      }     
+      text.setPosition((20 * pixel_factor), ((8 + (i * 1.5))*pixel_factor));
+      window.draw(text);
+   }
 
-   text.setString("readynt");
-   text.setPosition((20 * pixel_factor), (10.5*pixel_factor));
-   window.draw(text);
-
-   text.setString("player 2");
-   text.setPosition((2 * pixel_factor), (12*pixel_factor));
-   window.draw(text);
-
-   text.setString("readynt");
-   text.setPosition((20 * pixel_factor), (12*pixel_factor));
-   window.draw(text);
-
-   text.setString("player 3");
-   text.setPosition((2 * pixel_factor), (13.5*pixel_factor));
-   window.draw(text);
-
-   text.setString("readynt");
-   text.setPosition((20 * pixel_factor), (13.5*pixel_factor));
-   window.draw(text);
-   */
    text.setCharacterSize(pixel_factor * 1.5);
    text.setFillColor(sf::Color(legend_text_color,legend_text_color,legend_text_color,255));
    
@@ -614,7 +774,69 @@ void Display::Draw_Multiplayer_Create_Screen()
    window.draw(text);
 
    text.setString("enter     start");
-   text.setPosition(((window_width - 9.5)* pixel_factor), ((window_height - 2)*pixel_factor));
+   text.setPosition(((window_width - 9)* pixel_factor), ((window_height - 2)*pixel_factor));
+   window.draw(text);
+}
+void Display::Draw_Lobby()
+{
+   ChangeColor();   
+   sf::Font font;
+   if (!font.loadFromFile("font.ttf"))
+   {
+      cout << "font load error..." << endl;
+   }
+   sf::Text text;
+   text.setFont(font);
+
+   text.setString("MULTIPLAYER");
+   text.setCharacterSize(pixel_factor * 6);
+   text.setFillColor(sf::Color(legend_text_color,legend_text_color,legend_text_color,colorChanging));
+   text.setPosition((1.5 * pixel_factor), (-1.5*pixel_factor));
+   window.draw(text);
+
+   text.setCharacterSize(pixel_factor * 2);
+   text.setFillColor(sf::Color(legend_text_color,legend_text_color,legend_text_color,255));
+   
+   text.setString("Player  Name");
+   text.setPosition((2 * pixel_factor), (6*pixel_factor));
+   window.draw(text);
+   
+   text.setString("status");
+   text.setPosition((20 * pixel_factor), (6*pixel_factor));
+   window.draw(text);
+
+   text.setCharacterSize(pixel_factor * 1.5);
+
+   for (unsigned i = 0; i < player.Get_playing_server().players.size(); i++)
+   {
+      text.setString(player.Get_playing_server().players[i].name);
+      text.setPosition((2 * pixel_factor), ((8 + (i * 1.5))*pixel_factor));
+      window.draw(text);
+
+      if (player.Get_playing_server().players[i].ready == true)
+      {
+         text.setString("ready");
+      } else {
+         text.setString("readynt");
+      }     
+      text.setPosition((20 * pixel_factor), ((8 + (i * 1.5))*pixel_factor));
+      window.draw(text);
+   }
+   
+   text.setCharacterSize(pixel_factor * 1.5);
+   text.setFillColor(sf::Color(legend_text_color,legend_text_color,legend_text_color,255));
+   
+   text.setString("esc     back");
+   text.setPosition((0.5* pixel_factor), ((window_height - 2)*pixel_factor));   
+   window.draw(text);
+
+   if (player.Get_Status() == true)
+   {
+      text.setString("enter     ready");
+   } else {
+      text.setString("enter     readynt");
+   }
+   text.setPosition(((window_width - 10.5)* pixel_factor), ((window_height - 2)*pixel_factor));
    window.draw(text);
 }
 void Display::Draw_Multiplayer_Join_Screen()
@@ -634,29 +856,54 @@ void Display::Draw_Multiplayer_Join_Screen()
    text.setPosition((1.5 * pixel_factor), (-1.5*pixel_factor));
    window.draw(text);
    
-   text.setCharacterSize(pixel_factor * 2);
    text.setFillColor(sf::Color(legend_text_color,legend_text_color,legend_text_color,255));
    
+   text.setCharacterSize(pixel_factor * 1);
+
+   text.setString("press   to");
+   text.setPosition((1 * pixel_factor), (6.4*pixel_factor));
+   window.draw(text);
+   text.setString("select");
+   text.setPosition((1.5 * pixel_factor), (7*pixel_factor));
+   window.draw(text);
+   
+   text.setCharacterSize(pixel_factor * 2);
+
    text.setString("Server  Name");
-   text.setPosition((2 * pixel_factor), (6*pixel_factor));
+   text.setPosition((7 * pixel_factor), (6*pixel_factor));
    window.draw(text);
    
    text.setString("players");
-   text.setPosition((23 * pixel_factor), (6*pixel_factor));
+   text.setPosition((28 * pixel_factor), (6*pixel_factor));
    window.draw(text);
 
-   
+   if(server_choosen > 0)
+   {
+      sf::RectangleShape pixel(sf::Vector2f(35 * pixel_factor, 1.5 * pixel_factor));
+      pixel.setOutlineThickness(-5.f);
+      pixel.setOutlineColor(sf::Color(legend_text_color,legend_text_color,legend_text_color,colorChanging));
+      pixel.setPosition(1*pixel_factor, (8.2 + (server_choosen - 1)*1.5)*pixel_factor);
+      pixel.setFillColor(sf::Color(background_game_color,background_game_color,background_game_color,255));  
+      window.draw(pixel);
+   }
+
    text.setCharacterSize(pixel_factor * 1.5);
 
    for (unsigned i = 0; i < player.Get_server_list().size(); i++)
    {
+      text.setString(to_string(i + 1));
+      text.setPosition((2.5 * pixel_factor), ((8 + (i * 1.5))*pixel_factor));
+      window.draw(text);
+
       text.setString("server   of   " + player.Get_server_list()[i].creator_name);
-      text.setPosition((2 * pixel_factor), ((9 + (i * 1.5))*pixel_factor));
+      text.setPosition((7 * pixel_factor), ((8 + (i * 1.5))*pixel_factor));
       window.draw(text);
 
       text.setString(to_string(player.Get_server_list()[i].number_of_players_connected) + " of 4");
-      text.setPosition((23 * pixel_factor), ((9 + (i * 1.5))*pixel_factor));
-      window.draw(text);/* code */
+      text.setPosition((28 * pixel_factor), ((8 + (i * 1.5))*pixel_factor));
+      window.draw(text);
+
+      if(i == 8) break;
    }
 
    text.setCharacterSize(pixel_factor * 1.5);
@@ -666,8 +913,12 @@ void Display::Draw_Multiplayer_Join_Screen()
    text.setPosition((0.5* pixel_factor), ((window_height - 2)*pixel_factor));
    window.draw(text);
 
-   text.setString("enter     ok");
-   text.setPosition(((window_width - 7.5)* pixel_factor), ((window_height - 2)*pixel_factor));
+   text.setString("R     Reload");
+   text.setPosition(((window_width/2 - 4.5)* pixel_factor), ((window_height - 2)*pixel_factor));
+   window.draw(text);
+
+   text.setString("enter     select");
+   text.setPosition(((window_width - 10.5)* pixel_factor), ((window_height - 2)*pixel_factor));
    window.draw(text);
 }
 void Display::Draw_Multiplayer_Option_Screen()

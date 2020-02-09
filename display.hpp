@@ -27,6 +27,10 @@ private:
 
     bool thread_runing;
     Thread* networking;
+
+    short server_choosen;
+    bool reload;
+    status_type my_status;
     
     int level;
 
@@ -48,6 +52,8 @@ public:
     void Draw_Multiplayer_Option_Screen();
     void Draw_Multiplayer_Join_Screen();
     void Draw_Multiplayer_Create_Screen();
+    void Draw_Loading();
+    void Draw_Lobby();
     void DrawGame(vector<string>);
     void DrawPlayers(vector<string>,int,vector<string>,int,vector<string>,int);
     void DrawNext(vector<string>);

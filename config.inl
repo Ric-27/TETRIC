@@ -25,7 +25,7 @@ const int height = 20;
 
 // SCREEN //
 //dimension
-const int px_factor = 15;
+const int px_factor = 20;
 const int screen_height = 22;
 const int screen_width = 39;
 //color
