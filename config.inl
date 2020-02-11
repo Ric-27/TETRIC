@@ -10,8 +10,7 @@ using namespace std;
 // TETROMINOS //
 const int amount_of_pixels = 4;
 const int variety = 8;
-//const unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
-const unsigned seed = 14;
+//const unsigned seed = 14;
 //colors
 const string tetromino_o_color = "0.255.0";
 const string tetromino_i_color = "255.0.0";
@@ -29,7 +28,7 @@ const int matrix_size = width*(height+amount_of_pixels);
 
 // SCREEN //
 //dimension
-const int px_factor = 40;
+const int px_factor = 30;
 const int screen_height = 22;
 const int screen_width = 39;
 //color
@@ -43,7 +42,7 @@ const int score_text_color = 255;
 
 // GAME //
 //speed
-const int initial_speed = 50;
+const int initial_speed = 75;
 const int step_speed = 15;
 const int min_speed = 10;
 
