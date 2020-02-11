@@ -4,6 +4,16 @@ Client::Client(/* args */)
 {
     name = "";
     status = false;
+    playing_server.players.resize(max_players);
+    for (unsigned i = 0; i < max_players; i++)
+    {
+        playing_server.players[i].game.resize(matrix_size);
+        for (int j = 0; j < matrix_size; j++)
+        {
+            playing_server.players[i].game[j] = "";
+        }
+        
+    }
 }
 
 void Client::Connect()
@@ -36,134 +46,6 @@ void Client::Set_Name(string argName)
 server_info Client::Get_playing_server()
 {
     return playing_server;
-}
-
-void Client::ready(bool argReady){
-    //Filling send buffer:
-    Packet packet_send;
-    if(argReady)
-    {
-        packet_send << c2s_ready;
-    } else {
-        packet_send << c2s_readynt;
-    }
-    packet_send << name;
-    //Sending ready/not ready client message:
-    if (socket.send(packet_send, playing_server.address, server_port) != sf::Socket::Done)
-    {
-        std::cout << "Client: Send error" << endl;
-    }
-}
-
-void Client::Lobby_Communication(status_type& argStatus){
-    argStatus = changednt;
-    socket.setBlocking(false);
-    
-    Packet packet_recv;;
-    IpAddress sender;
-    unsigned short port;
-
-    string player_name;
-    while(true){
-        //std::cout << "loop" << endl;
-         //Check if there is a message:
-        if (socket.receive(packet_recv, sender, port) == Socket::Done)
-        {
-            Packet packet_send;
-            Uint32 infotype_value;
-            //Get the buffer information:
-            packet_recv >> infotype_value;
-            std::cout << infotype_value << endl;
-            switch (infotype_value)
-            {
-            case s2c_ready_ok:
-            {    
-                player_name = "";
-                packet_recv >> player_name;
-                vector<player_info>::iterator it = find(playing_server.players.begin(), playing_server.players.end(), player_info{IpAddress::getLocalAddress(), false, player_name});
-                if(it == playing_server.players.end()){
-                    argStatus = ready_error;
-                    break;
-                }
-                    
-                (*it).ready = true;
-            
-                std::cout << "Ready " << endl;
-                argStatus = ready_ok;
-                
-                break;
-            }
-            case s2c_readynt_ok:
-            {    
-                player_name = "";
-                packet_recv >> player_name;
-                vector<player_info>::iterator it = find(playing_server.players.begin(), playing_server.players.end(), player_info{IpAddress::getLocalAddress(), false, player_name});
-                if(it == playing_server.players.end()){
-                    argStatus = readynt_error;
-                    break;
-                }
-                    
-                (*it).ready = false;
-            
-                std::cout << "Ready " << endl;
-                argStatus = readynt_ok;
-                
-                break;
-            }
-            //Check if the message is of new client info:
-            case s2c_new_player_info:
-                //std::cout << "new player" << endl; 
-                Uint32 number_of_players;
-                playing_server.players.clear();
-                packet_recv >> number_of_players;
-                for(unsigned i = 0; i < number_of_players; i ++){
-                    player_info player_data;
-                    packet_recv >> player_data;
-                    playing_server.players.emplace_back(player_data);
-                    for(unsigned i = 0; i < width*(height+amount_of_pixels); i++)
-                    {
-                            string value = "";
-                            packet_recv >> value;
-                            playing_server.players[i].game.emplace_back(value);
-                    }
-                }
-                argStatus = changed;
-            break;
-            //Check if the message is of update client info:
-            case s2c_update_player:
-            {    
-                unsigned pos_client;
-
-                packet_recv >> pos_client;
-                packet_recv >> playing_server.players[pos_client];
-
-                std::cout << "Client update " << playing_server.players[pos_client].address << playing_server.players[pos_client].ready << endl;
-                argStatus = changed;
-                break;
-            }
-            //Check if the message is of delete client info:
-            /*
-            case DELETE_CLIENT_INFO:
-                unsigned pos_client;
-                packet_recv >> pos_client;
-                playing_server.players.erase(playing_server.players.begin() + pos_client);
-                argStatus = CHANGED;
-            break;
-            case SERVER_DISCONNECTION:
-                playing_server.address = IpAddress::None;
-                argStatus = SERVER_DISCONNECTED;
-                return;
-            */
-            case s2c_game_start:
-                argStatus = playing;
-                return;
-            
-            default:
-                break;
-            }
-            std::cout << "Received bytes from " << sender << " on port " << port << std::endl;
-        }
-    }
 }
 
 void Client::Fill_server_list()
@@ -255,6 +137,7 @@ void Client::Selected_Server(const unsigned argServer, status_type& argStatus, L
         //Check if there is a message:
         if (socket.receive(packet_recv, sender, port) == Socket::Done)
         {
+            cout << "recibi" << endl;
             //Checking that the address of the sender 
             //is the same as that of the selected server
             if(sender == server_list[argServer - 1].address){
@@ -284,17 +167,21 @@ void Client::Selected_Server(const unsigned argServer, status_type& argStatus, L
 
                         packet_recv >> player_status;
                         cout << player_status << endl;
-
-                        playing_server.players.emplace_back(player_info{"", player_status, player_name});
-                        playing_server.players[i].game.clear();
-                        
+                        cout << "here 0" << endl;
+                        playing_server.players[i] = player_info{"", player_status, player_name};
+                        cout << "here 1" << endl;
+                        /*
                         string value;
-                        for (int j = 0; j < width*(height + amount_of_pixels); j++)
+                        for (int j = 0; j < matrix_size; j++)
                         {
-                            //cout << j << " ";
                             packet_recv >> value;
-                            playing_server.players[i].game.emplace_back(value);
+                            playing_server.players[i].game[j] = value;
+                            cout << "valor recibido: " << value;
+                            cout << " -- valor en el vector: " << playing_server.players[i].game[j];
+                            cout << endl;
                         }
+                        */
+                        cout << "here 2" << endl;
                         cout << endl;
                     }
                     argStatus = connected;
@@ -309,6 +196,136 @@ void Client::Selected_Server(const unsigned argServer, status_type& argStatus, L
 
     argStatus = error;
     return;
+}
+
+void Client::Lobby_Communication(status_type& argStatus){
+    std::cout << "lobby" << endl;
+    argStatus = changednt;
+    socket.setBlocking(false);
+    
+    Packet packet_recv;;
+    IpAddress sender;
+    unsigned short port;
+
+    string player_name;
+    while(true){
+        std::cout << "loop" << endl;
+         //Check if there is a message:
+        if (socket.receive(packet_recv, sender, port) == Socket::Done)
+        {
+            Packet packet_send;
+            Uint32 infotype_value;
+            //Get the buffer information:
+            packet_recv >> infotype_value;
+            std::cout << infotype_value << endl;
+            switch (infotype_value)
+            {
+            case s2c_ready_ok:
+            {    
+                player_name = "";
+                packet_recv >> player_name;
+                vector<player_info>::iterator it = find(playing_server.players.begin(), playing_server.players.end(), player_info{IpAddress::getLocalAddress(), false, player_name});
+                if(it == playing_server.players.end()){
+                    argStatus = ready_error;
+                    break;
+                }
+                    
+                (*it).ready = true;
+            
+                std::cout << "Ready " << endl;
+                argStatus = ready_ok;
+                
+                break;
+            }
+            case s2c_readynt_ok:
+            {    
+                player_name = "";
+                packet_recv >> player_name;
+                vector<player_info>::iterator it = find(playing_server.players.begin(), playing_server.players.end(), player_info{IpAddress::getLocalAddress(), false, player_name});
+                if(it == playing_server.players.end()){
+                    argStatus = readynt_error;
+                    break;
+                }
+                    
+                (*it).ready = false;
+            
+                std::cout << "Ready " << endl;
+                argStatus = readynt_ok;
+                
+                break;
+            }
+            //Check if the message is of new client info:
+            case s2c_new_player_info:
+                //std::cout << "new player" << endl; 
+                Uint32 number_of_players;
+                packet_recv >> number_of_players;
+                for(unsigned i = 0; i < number_of_players; i ++){
+                    player_info player_data;
+                    packet_recv >> player_data;
+                    playing_server.players[i] = player_data;
+                    /*
+                    for(unsigned j = 0; j < width*(height+amount_of_pixels); j++)
+                    {
+                            string value = "";
+                            packet_recv >> value;
+                            playing_server.players[i].game[j] = (value);
+                    }
+                    */
+                }
+                argStatus = changed;
+            break;
+            //Check if the message is of update client info:
+            case s2c_update_player:
+            {    
+                unsigned pos_client;
+
+                packet_recv >> pos_client;
+                packet_recv >> playing_server.players[pos_client];
+
+                std::cout << "Client update " << playing_server.players[pos_client].address << playing_server.players[pos_client].ready << endl;
+                argStatus = changed;
+                break;
+            }
+            //Check if the message is of delete client info:
+            /*
+            case DELETE_CLIENT_INFO:
+                unsigned pos_client;
+                packet_recv >> pos_client;
+                playing_server.players.erase(playing_server.players.begin() + pos_client);
+                argStatus = CHANGED;
+            break;
+            case SERVER_DISCONNECTION:
+                playing_server.address = IpAddress::None;
+                argStatus = SERVER_DISCONNECTED;
+                return;
+            */
+            case s2c_game_start:
+                argStatus = playing;
+                return;
+            
+            default:
+                break;
+            }
+            std::cout << "Received bytes from " << sender << " on port " << port << std::endl;
+        }
+    }
+}
+
+void Client::ready(bool argReady){
+    //Filling send buffer:
+    Packet packet_send;
+    if(argReady)
+    {
+        packet_send << c2s_ready;
+    } else {
+        packet_send << c2s_readynt;
+    }
+    packet_send << name;
+    //Sending ready/not ready client message:
+    if (socket.send(packet_send, playing_server.address, server_port) != sf::Socket::Done)
+    {
+        std::cout << "Client: Send error" << endl;
+    }
 }
 
 void Client::Game_Communication(status_type& argStatus, Logic& argMatrix){
@@ -343,14 +360,13 @@ void Client::Game_Communication(status_type& argStatus, Logic& argMatrix){
                 case s2c_game_update:
                     cout << "cthere 1" << endl;
                     for(unsigned i = 0; i < playing_server.number_of_players_connected; i ++){
-                        playing_server.players[i].game.clear();
                         packet_recv >> playing_server.players[i].name;
                         packet_recv >> playing_server.players[i].score;
                         string value;
-                        for (int j = 0; j < width*(height + amount_of_pixels); j++)
+                        for (int j = 0; j < matrix_size; j++)
                         {
                             packet_recv >> value;
-                            playing_server.players[i].game.emplace_back(value);
+                            playing_server.players[i].game[j] = value;
                         }                 
                     }
                     cout << "cthere 2" << endl;

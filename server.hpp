@@ -20,6 +20,7 @@ public:
     vector<player_info> Get_Players();
     void Clients_Communication(status_type&);
     void Connect();
+    Uint32 GetPlayers_Connected();
     void Set_Creator_name(string, Logic&);
     void Start();
     bool Check_Start_ability();

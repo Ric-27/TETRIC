@@ -57,6 +57,9 @@ public:
     void Draw_Multiplayer_Join_Screen();
     void Draw_Multiplayer_Create_Screen();
     void Draw_Loading();
+    void Draw_Legend_SP();
+    void Draw_Legend_MP();
+    void Draw_Tutorial();
     void Draw_Lobby();
     void DrawGame(vector<string>);
     void DrawPlayers(vector<string>,int,vector<string>,int,vector<string>,int);

@@ -6,9 +6,20 @@ Server::Server():
     start_able(false)
 {
     local_ip_address = IpAddress::getLocalAddress();
-    players.emplace_back(player_info{local_ip_address, true});
+    players.resize(max_players);
+    players[0] = player_info{local_ip_address, true};
+    
+    for (unsigned i = 0; i < max_players; i++)
+    {
+        players[i].game.resize(matrix_size);
+        players[i].name = "available";
+        players[i].ready = true;
+        for (int j = 0; j < matrix_size; j++)
+        {
+            players[i].game[j] = "";
+        }
+    }
 }
-
 void Server::Connect()
 {
     if (socket.bind(server_port) != sf::Socket::Done)
@@ -17,25 +28,23 @@ void Server::Connect()
         return;
     }
 }
-
 void Server::Set_Creator_name(string argName, Logic& argGame)
 {
     creator_name = argName;
     players[0].name = argName;
-    players[0].ready = true;
-    players[0].game.clear();
-    for (unsigned i = 0; i < width*(height+amount_of_pixels); i++)
+    for (unsigned i = 0; i < matrix_size; i++)
     {
-        players[0].game.emplace_back(argGame.getMatrix()[i]);
+        players[0].game[i] = argGame.getMatrix()[i];
     }
     players[0].score = argGame.getScore();
 }
-
 vector<player_info> Server::Get_Players()
 {
     return players;
 }
-
+Uint32 Server::GetPlayers_Connected(){
+    return players_connected;
+}
 void Server::Clients_Communication(status_type& argStatus)
 {
     socket.setBlocking(false);
@@ -66,66 +75,76 @@ void Server::Clients_Communication(status_type& argStatus)
                 }
                 case c2s_connection_request:
                 {
-                    //cout << "here 1" << endl;
+                    cout << "here 1" << endl;
                     //Check if I can receive more players:
-                    if(players.size() == 4){
+                    if(players_connected == 4){
                         //Buffer filling with error message:
                         packet_send << s2c_connection_error;
                     } else {
-                        //cout << "here 2" << endl;
-                        players_connected++;
+                        cout << "here 2" << endl;
                         //Adding the new client to the client list:
                         player_name = "";
                         packet_recv >> player_name;
                         player_info player_data{sender, false, player_name};
-                        player_data.game.clear();
-                        for(unsigned i = 0; i < (height+amount_of_pixels)*width; i++){
+
+                        player_data.game.resize(matrix_size);
+
+                        for(unsigned i = 0; i < matrix_size; i++){
                             string value = "";
                             packet_recv >> value;
-                            player_data.game.emplace_back(value);
+                            player_data.game[i] = value;
                         }
-                        //cout << "here 3" << endl;
+                        cout << "here 3" << endl;
                         if(find(players.begin(), players.end(), player_data) == players.end())
                         {
-                            players.emplace_back(player_data);
+                            cout << "player added" << endl;
+                            players[players_connected] = player_data;
+                            players_connected++;
                         }
-                        //cout << "here 4" << endl;
+                        cout << "here 4" << endl;
                         //Buffer filling with success message
                         packet_send << s2c_connection_sucess;
-                        packet_send << (Uint32)players.size();
-                        cout << players.size() << endl;
+                        packet_send << (Uint32)players_connected;
+                        cout << players_connected << endl;
 
                         all_packet_send << s2c_new_player_info;
-                        all_packet_send << (Uint32)players.size();
-                        //cout << "here 5" << endl;
-                        for(unsigned i = 0; i < players.size(); i ++)
+                        all_packet_send << (Uint32)players_connected;
+                        cout << "here 5" << endl;
+                        for(unsigned i = 0; i < players_connected; i ++)
                         {
-                            //cout << "here 6" << endl;
+                            cout << "here 6" << endl;
                             packet_send << players[i].name;
                             cout << players[i].name << endl;
                             packet_send << players[i].ready;
                             cout << players[i].ready << endl;
 
                             all_packet_send << players[i];
-                            //cout << players[i].game.size() << endl;
-                            for(unsigned j = 0; j < players[i].game.size(); j ++)
+                            /*
+                            for(unsigned j = 0; j < matrix_size; j ++)
                             {
-                                //cout << j << " ";
+                                cout << j << " ";
                                 packet_send << players[i].game[j];
                             }
                             cout << endl;
+                            */
                         }
-                        //cout << "here 7" << endl;                   
+                        cout << "here 7" << endl;                   
                     }
                     //Send information to client
                     if (socket.send(packet_send, sender, client_port) != sf::Socket::Done)
                         cout << "Server: Send error" << endl;
                     
                     if(all_packet_send.getDataSize() > 0){
-                        for(unsigned i = 0; i < players.size(); i ++){
-                            if(players[i].address != sender && players[i].name != creator_name)
+                        for(unsigned i = 0; i < players_connected; i ++)
+                        {
+                            if(players[i].name != player_name && players[i].name != creator_name)
+                            {
+                                cout << "entre donde no deberia" << endl;
                                 if (socket.send(all_packet_send, players[i].address, client_port) != sf::Socket::Done)
+                                {
                                     cout << "Server: Send error" << endl;
+                                }
+                            }
                         }
                         argStatus = changed;
                         cout << "New client " << sender << endl;
@@ -145,7 +164,7 @@ void Server::Clients_Communication(status_type& argStatus)
                     packet_send << (Uint32)(it - players.begin());
                     packet_send << (*it);
 
-                    for(unsigned i = 0; i < players.size(); i++){
+                    for(unsigned i = 0; i < players_connected; i++){
                         if(players[i].name != creator_name)
                             if (socket.send(packet_send, players[i].address, client_port) != sf::Socket::Done)
                                 cout << "Server: Send error" << endl;
@@ -174,7 +193,7 @@ void Server::Clients_Communication(status_type& argStatus)
                     packet_send << (Uint32)(it - players.begin());
                     packet_send << (*it);
                     
-                    for(unsigned i = 0; i < players.size(); i++){
+                    for(unsigned i = 0; i < players_connected; i++){
                         if(players[i].name != creator_name)
                             if (socket.send(packet_send, players[i].address, client_port) != sf::Socket::Done)
                                 cout << "Server: Send error" << endl;
@@ -196,12 +215,11 @@ void Server::Clients_Communication(status_type& argStatus)
         }
     }
 }
-
 bool Server::Check_Start_ability(){
     bool canStart = true;
-    if (players.size() == 1) canStart = false;
+    if (players_connected == 1) canStart = false;
   
-    for (unsigned i = 1; i < players.size(); i++) {
+    for (unsigned i = 1; i < players_connected; i++) {
         if (!players[i].ready) {
             //std::cout << "Can't start a game, some players aren't ready!!!" << endl;
             canStart = false;
@@ -210,7 +228,6 @@ bool Server::Check_Start_ability(){
     }
     return canStart;
 }
-
 void Server::Start() {
     if(Check_Start_ability())
     {
@@ -218,7 +235,7 @@ void Server::Start() {
 
         packet_send << s2c_game_start;
 
-        for (unsigned i = 0; i < players.size(); i++) 
+        for (unsigned i = 0; i < players_connected; i++) 
         {
             if (players[i].name != creator_name)
                 if (socket.send(packet_send, players[i].address, client_port) != sf::Socket::Done)
@@ -228,51 +245,6 @@ void Server::Start() {
         cout << "can't start" << endl;
     }
 }
-
-void Server::Send_Games(Logic& argGame)
-{
-    cout << "here 1" << endl;
-    //Filling send buffer:
-    Packet packet_send;
-    
-    packet_send << s2c_game_update;
-
-    for(unsigned i = 0; i < players.size(); i ++){
-        cout << "here 1.1" << endl;
-        if(players[i].name == creator_name)
-        {
-            players[i].score = argGame.getScore();
-        }
-
-        packet_send << players[i].name;
-        packet_send << players[i].score;
-
-        if(i == 0) players[0].game.clear();
-        cout << "here 1.2." << i << endl;
-        for(int j = 0; j < width*(height + amount_of_pixels); j ++){
-            if(players[i].name == creator_name)
-            {
-                players[i].game.emplace_back(argGame.getMatrix()[j]);
-            }
-            packet_send << players[i].game[j];
-        }
-        cout << "here 1.3" << endl;
-    }
-    cout << "here 2" << endl;
-    
-    for(unsigned i = 0; i < players.size(); i ++){
-        if(players[i].name != creator_name)
-        {
-            //Sending board data message: 
-            if (socket.send(packet_send, players[i].address, client_port) != sf::Socket::Done)
-            {
-                cout << "Client: Send error" << endl;
-            }
-        }   
-    }
-    cout << "here 3" << endl;
-}
-
 void Server::Game_Communication(status_type& argStatus, Logic& argMatrix)
 {
     cout << "server listening" << endl;
@@ -304,26 +276,25 @@ void Server::Game_Communication(status_type& argStatus, Logic& argMatrix)
             {
                 case c2s_game_update:
                 {
-                    cout << "there 1" << endl;
+                    //cout << "there 1" << endl;
                     player_name = "";
                     packet_recv >> player_name;
                     //cout << player_name << endl;
                     vector<player_info>::iterator it = find(players.begin(), players.end(), player_info{sender, false, player_name});
                     if(it == players.end())
                     {
-                        cout << "no encontrado" << endl;
+                        //cout << "no encontrado" << endl;
                         break;
                     }
-                    cout << "there 2" << endl;
+                    //cout << "there 2" << endl;
                     packet_recv >> (*it).score;
-                    //cout << (*it).score << endl;
+                    ////cout << (*it).score << endl;
                     string value;
-                    (*it).game.clear();
-                    for(unsigned i = 0; i < (height+amount_of_pixels)*width; i++){
+                    for(unsigned i = 0; i < matrix_size; i++){
                             packet_recv >> value;
-                            (*it).game.emplace_back(value);
+                            (*it).game[i] = value;
                     }
-                    cout << "there 3" << endl;
+                    //cout << "there 3" << endl;
                 }       
                     break;
 
@@ -333,7 +304,48 @@ void Server::Game_Communication(status_type& argStatus, Logic& argMatrix)
         }
     }
 }
+void Server::Send_Games(Logic& argGame)
+{
+    //cout << "here 1" << endl;
+    //Filling send buffer:
+    Packet packet_send;
+    
+    packet_send << s2c_game_update;
 
+    for(unsigned i = 0; i < players_connected; i ++){
+        //cout << "here 1.1" << endl;
+        if(players[i].name == creator_name)
+        {
+            players[i].score = argGame.getScore();
+        }
+
+        packet_send << players[i].name;
+        packet_send << players[i].score;
+
+        //cout << "here 1.2." << i << endl;
+        for(int j = 0; j < matrix_size; j ++){
+            if(players[i].name == creator_name)
+            {
+                players[i].game[j] = argGame.getMatrix()[j];
+            }
+            packet_send << players[i].game[j];
+        }
+        //cout << "here 1.3" << endl;
+    }
+    //cout << "here 2" << endl;
+    
+    for(unsigned i = 0; i < players_connected; i ++){
+        if(players[i].name != creator_name)
+        {
+            //Sending board data message: 
+            if (socket.send(packet_send, players[i].address, client_port) != sf::Socket::Done)
+            {
+                cout << "Client: Send error" << endl;
+            }
+        }   
+    }
+    //cout << "here 3" << endl;
+}
 Server::~Server()
 {
 }

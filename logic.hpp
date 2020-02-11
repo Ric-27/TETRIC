@@ -33,7 +33,7 @@ private:
 
     int special_counter;
 
-    int status; //0 start, 1 playing, 2 pause, 3 gameover
+    int status; //0 start, 1 tutorial, 2 singleplayer, 3 pause, 4 gameover, 5 - 11 multiplayer
 
     bool hardDrop;
 

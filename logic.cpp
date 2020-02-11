@@ -332,7 +332,7 @@ void Logic::CheckGameOver(){
     {
         if (logicMatrix[i + logicX * (logicY - height - 1)] == 1)
         {
-            status = 3;
+            status = 4;
             break;
         }        
     }    
@@ -348,9 +348,9 @@ void Logic::CleanUp(){
     level = 0;
     rows = 0;
     localRows = 0;
-    slowness = 98;
+    slowness = initial_speed;
 
-    status = 1;
+    status = 2;
 
     Tetromino newPiece(coorZero,0);
     nextPiece = newPiece;
