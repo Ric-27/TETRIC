@@ -1048,7 +1048,7 @@ void Display::DrawPlayers_Guest(){
    
    for (unsigned i = 1; i < max_players; i++)
    {
-      if (player.Get_playing_server().players[i].score == (*it).name)
+      if (player.Get_playing_server().players[i].name == (*it).name)
       {
          cout << my_pos << endl;
          my_pos = i;
