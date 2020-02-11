@@ -247,7 +247,7 @@ void Server::Start() {
 }
 void Server::Game_Communication(status_type& argStatus, Logic& argMatrix)
 {
-    cout << "server listening" << endl;
+    cout << "server listening game" << endl;
     argStatus = changednt;
     socket.setBlocking(false);
     
@@ -276,25 +276,25 @@ void Server::Game_Communication(status_type& argStatus, Logic& argMatrix)
             {
                 case c2s_game_update:
                 {
-                    //cout << "there 1" << endl;
+                    cout << "there 1" << endl;
                     player_name = "";
                     packet_recv >> player_name;
                     //cout << player_name << endl;
                     vector<player_info>::iterator it = find(players.begin(), players.end(), player_info{sender, false, player_name});
                     if(it == players.end())
                     {
-                        //cout << "no encontrado" << endl;
+                        cout << "no encontrado" << endl;
                         break;
                     }
-                    //cout << "there 2" << endl;
+                    cout << "there 2" << endl;
                     packet_recv >> (*it).score;
-                    ////cout << (*it).score << endl;
+                    cout << (*it).score << endl;
                     string value;
-                    for(unsigned i = 0; i < matrix_size; i++){
+                    for(int i = 0; i < matrix_size; i++){
                             packet_recv >> value;
                             (*it).game[i] = value;
                     }
-                    //cout << "there 3" << endl;
+                    cout << "there 3" << endl;
                 }       
                     break;
 

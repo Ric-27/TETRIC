@@ -10,6 +10,8 @@ using namespace std;
 // TETROMINOS //
 const int amount_of_pixels = 4;
 const int variety = 8;
+//const unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+const unsigned seed = 14;
 //colors
 const string tetromino_o_color = "0.255.0";
 const string tetromino_i_color = "255.0.0";

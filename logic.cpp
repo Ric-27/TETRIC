@@ -350,7 +350,7 @@ void Logic::CleanUp(){
     localRows = 0;
     slowness = initial_speed;
 
-    status = 2;
+    status = 0;
 
     Tetromino newPiece(coorZero,0);
     nextPiece = newPiece;

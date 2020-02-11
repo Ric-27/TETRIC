@@ -113,7 +113,7 @@ void Display::Run()
             }
             if (my_status == playing)
             {
-               game.setStatus(10);
+               game.setStatus(11);
                thread_runing = false;
             }
             
@@ -121,6 +121,7 @@ void Display::Run()
             break;
          case 10: //playing multiplayer as host
             if(!thread_runing){
+               cout << "thread launch server" << endl;
                networking->terminate();
                networking = new Thread([&] () {host.Game_Communication(my_status,game);});
                networking->launch();
@@ -146,6 +147,7 @@ void Display::Run()
             break;
          case 11: //playing multiplayer as client
             if(!thread_runing){
+               cout << "thread launch" << endl;
                networking->terminate();
                networking = new Thread([&] () {player.Game_Communication(my_status,game);});
                networking->launch();
@@ -155,8 +157,7 @@ void Display::Run()
             DrawBackground();
             DrawGame(game.getMatrix());
             Draw_Legend_MP();
-            //cout << "host: " << host.Get_Players()[0].game.size() << endl;
-            DrawPlayers(player.Get_playing_server().players[0].game,player.Get_playing_server().players[0].score,game.getMatrix(),game.getScore(),game.getMatrix(),game.getScore());
+            DrawPlayers_Guest();
             DrawNext(game.getNext());
             DrawPoints(game.getScore(),game.getRows(),game.getLevel());
             if (level != game.getLevel())
@@ -271,6 +272,7 @@ void Display::Events()
                switch (event.key.code)
                {
                   case sf::Keyboard::R: //Restart
+                     //networking->terminate();
                      level = 0;
                      game.CleanUp();              
                      break;
@@ -707,33 +709,33 @@ void Display::Draw_Legend_MP()
    text.setFillColor(sf::Color(legend_text_color,legend_text_color,legend_text_color,255));
 
    text.setString("Press      to");   
-   text.setPosition((21*pixel_factor), (11*pixel_factor));
+   text.setPosition((21*pixel_factor), (13*pixel_factor));
    window.draw(text);
 
    text.setCharacterSize(pixel_factor * 1.5);
 
    text.setString("right                         move  right");   
-   text.setPosition((21*pixel_factor), (13.5*pixel_factor));
-   window.draw(text);
-
-   text.setString("left                             move  left");   
-   text.setPosition((21*pixel_factor), (14.5*pixel_factor));
-   window.draw(text);
-
-   text.setString("up                                     rotate");   
    text.setPosition((21*pixel_factor), (15.5*pixel_factor));
    window.draw(text);
 
-   text.setString("down                            soft drop");   
+   text.setString("left                             move  left");   
    text.setPosition((21*pixel_factor), (16.5*pixel_factor));
    window.draw(text);
 
-   text.setString("space                        hard drop");   
+   text.setString("up                                     rotate");   
    text.setPosition((21*pixel_factor), (17.5*pixel_factor));
    window.draw(text);
 
-   text.setString("Q                                         quit");   
+   text.setString("down                            soft drop");   
    text.setPosition((21*pixel_factor), (18.5*pixel_factor));
+   window.draw(text);
+
+   text.setString("space                        hard drop");   
+   text.setPosition((21*pixel_factor), (19.5*pixel_factor));
+   window.draw(text);
+
+   text.setString("Q                                         quit");   
+   text.setPosition((21*pixel_factor), (20.5*pixel_factor));
    window.draw(text);
 }
 void Display::Draw_Tutorial()
@@ -917,7 +919,7 @@ void Display::DrawPlayers(vector<string> argMatrixP1,int argScoreP1,vector<strin
       }        
    }
 
-   sf::RectangleShape pixel(sf::Vector2f(4*pixel_factor, 2*pixel_factor));
+   sf::RectangleShape pixel(sf::Vector2f(4*pixel_factor, 3*pixel_factor));
    pixel.setPosition(21*pixel_factor, 9*pixel_factor);
    pixel.setFillColor(sf::Color(20,20,20,255));            
    window.draw(pixel);
@@ -941,28 +943,198 @@ void Display::DrawPlayers(vector<string> argMatrixP1,int argScoreP1,vector<strin
    text.setFillColor(sf::Color::White);
    string k;
 
-   text.setString("SCORE");   
-   text.setPosition(21.5*pixel_factor, 8.8 * pixel_factor);
-   window.draw(text);
-   k = to_string(argScoreP1);
-   text.setString(k);   
-   text.setPosition(21.1*pixel_factor, 9.8 * pixel_factor);
+   text.setString(host.Get_Players()[1].name);   
+   text.setPosition(21.1*pixel_factor, 8.8 * pixel_factor);
    window.draw(text);
 
    text.setString("SCORE");   
-   text.setPosition(27.5*pixel_factor, 8.8 * pixel_factor);
+   text.setPosition(21.5*pixel_factor, 9.8 * pixel_factor);
    window.draw(text);
+
+   k = to_string(argScoreP1);
+   text.setString(k);   
+   text.setPosition(21.1*pixel_factor, 10.8 * pixel_factor);
+   window.draw(text);
+
+
+   text.setString(host.Get_Players()[2].name);   
+   text.setPosition(27.1*pixel_factor, 8.8 * pixel_factor);
+   window.draw(text);
+
+   text.setString("SCORE");   
+   text.setPosition(27.5*pixel_factor, 9.8 * pixel_factor);
+   window.draw(text);
+
    k = to_string(argScoreP2);
    text.setString(k);   
-   text.setPosition(27.1*pixel_factor, 9.8 * pixel_factor);
+   text.setPosition(27.1*pixel_factor, 10.8 * pixel_factor);
    window.draw(text);
-  
+
+   text.setString(host.Get_Players()[3].name);   
+   text.setPosition(33.1*pixel_factor, 8.8 * pixel_factor);
+   window.draw(text);
    text.setString("SCORE");   
-   text.setPosition(33.5*pixel_factor, 8.8 * pixel_factor);
+   text.setPosition(33.5*pixel_factor, 9.8 * pixel_factor);
    window.draw(text);
    k = to_string(argScoreP3);
    text.setString(k);   
-   text.setPosition(33.1*pixel_factor, 9.8 * pixel_factor);
+   text.setPosition(33.1*pixel_factor, 10.8 * pixel_factor);
+   window.draw(text);
+}
+void Display::DrawPlayers_Guest(){
+   //player.Get_playing_server().players[0].game
+   vector<player_info>::iterator it = find(player.Get_playing_server().players.begin(), player.Get_playing_server().players.end(), player_info{"", false, player_Name});
+   int local_PF = pixel_factor / 2.5;
+   short middle = 0;
+   short right = 0;
+   short my_pos = 0;
+   sf::RectangleShape pixel(sf::Vector2f(4*pixel_factor, 3*pixel_factor));
+   pixel.setPosition(21*pixel_factor, 9*pixel_factor);
+   pixel.setFillColor(sf::Color(20,20,20,255));            
+   window.draw(pixel);
+
+   pixel.setPosition(27*pixel_factor, 9*pixel_factor);
+   pixel.setFillColor(sf::Color(20,20,20,255));            
+   window.draw(pixel);
+
+   pixel.setPosition(33*pixel_factor, 9*pixel_factor);
+   pixel.setFillColor(sf::Color(20,20,20,255));            
+   window.draw(pixel);
+
+   sf::Font font;
+   if (!font.loadFromFile("font.ttf"))
+   {
+      cout << "font load error..." << endl;
+   }
+   sf::Text text;
+   text.setFont(font);
+   text.setCharacterSize(local_PF * 2.5);
+   text.setFillColor(sf::Color::White);
+   string k;
+   for (int j = amount_of_pixels; j < ySize; j++)
+   {
+      for (int i = 0; i < xSize; i++)
+      {
+         sf::RectangleShape pixel(sf::Vector2f(local_PF, local_PF));
+         pixel.setPosition(((i + 1) *local_PF)+20.6*pixel_factor, ((j - amount_of_pixels)*local_PF)+1*pixel_factor);
+         string k = player.Get_playing_server().players[0].game[i + xSize * j];
+         if (k.length() > 0)
+         {
+            int posp1 = k.find('.');
+            int posp2 = k.find('.',posp1 + 1);
+            
+            short r = stoi(k.substr(0,posp1));
+            short g = stoi(k.substr(posp1 + 1,  posp2 - posp1 - 1));
+            short b = stoi(k.substr(posp2 + 1,  k.length() - posp2 - 1));
+            pixel.setFillColor(sf::Color(r,g,b,255));
+         } else {
+            pixel.setFillColor(sf::Color(background_game_color,background_game_color,background_game_color,255));
+         }             
+         window.draw(pixel);            
+      }        
+   }
+   text.setString(player.Get_playing_server().players[0].name);   
+   text.setPosition(21.1*pixel_factor, 8.8 * pixel_factor);
+   window.draw(text);
+
+   text.setString("SCORE");   
+   text.setPosition(21.5*pixel_factor, 9.8 * pixel_factor);
+   window.draw(text);
+
+   k = to_string(player.Get_playing_server().players[0].score);
+   text.setString(k);   
+   text.setPosition(21.1*pixel_factor, 10.8 * pixel_factor);
+   window.draw(text);
+   
+   for (unsigned i = 1; i < max_players; i++)
+   {
+      if ((*it).name == player_Name)
+      {
+         my_pos = i;
+         break;
+      }      
+   }
+   switch (my_pos)
+   {
+      case 1:
+         middle = 2;
+         right = 3;
+         break;
+      case 2:
+         middle = 1;
+         right = 3;
+         break;
+      case 3:
+         middle = 1;
+         right = 2;
+         break;        
+      default:
+         break;
+   }
+   for (int j = amount_of_pixels; j < ySize; j++)
+   {
+      for (int i = 0; i < xSize; i++)
+      {
+         sf::RectangleShape pixel(sf::Vector2f(local_PF, local_PF));
+         pixel.setPosition(((i + 1) *local_PF)+26.6*pixel_factor, ((j - amount_of_pixels)*local_PF)+1*pixel_factor);
+         string k = player.Get_playing_server().players[middle].game[i + xSize * j];
+         if (k.length() > 0)
+         {
+            int posp1 = k.find('.');
+            int posp2 = k.find('.',posp1 + 1);
+            
+            short r = stoi(k.substr(0,posp1));
+            short g = stoi(k.substr(posp1 + 1,  posp2 - posp1 - 1));
+            short b = stoi(k.substr(posp2 + 1,  k.length() - posp2 - 1));
+            pixel.setFillColor(sf::Color(r,g,b,255)); 
+         } else {
+            pixel.setFillColor(sf::Color(background_game_color,background_game_color,background_game_color,255));
+         }             
+         window.draw(pixel);            
+      }    
+   }
+   text.setString(player.Get_playing_server().players[middle].name);   
+   text.setPosition(27.1*pixel_factor, 8.8 * pixel_factor);
+   window.draw(text);
+   text.setString("SCORE");   
+   text.setPosition(27.5*pixel_factor, 9.8 * pixel_factor);
+   window.draw(text);
+   k = to_string(player.Get_playing_server().players[middle].score);
+   text.setString(k);   
+   text.setPosition(27.1*pixel_factor, 10.8 * pixel_factor);
+   window.draw(text);
+
+   for (int j = amount_of_pixels; j < ySize; j++)
+   {
+      for (int i = 0; i < xSize; i++)
+      {
+         sf::RectangleShape pixel(sf::Vector2f(local_PF, local_PF));
+         pixel.setPosition(((i + 1) *local_PF)+32.6*pixel_factor, ((j - amount_of_pixels)*local_PF)+1*pixel_factor);
+         string k = player.Get_playing_server().players[right].game[i + xSize * j];
+         if (k.length() > 0)
+         {
+            int posp1 = k.find('.');
+            int posp2 = k.find('.',posp1 + 1);
+            
+            short r = stoi(k.substr(0,posp1));
+            short g = stoi(k.substr(posp1 + 1,  posp2 - posp1 - 1));
+            short b = stoi(k.substr(posp2 + 1,  k.length() - posp2 - 1));
+            pixel.setFillColor(sf::Color(r,g,b,255)); 
+         } else {
+            pixel.setFillColor(sf::Color(background_game_color,background_game_color,background_game_color,255));
+         }             
+         window.draw(pixel);            
+      }        
+   }
+   text.setString(player.Get_playing_server().players[right].name);   
+   text.setPosition(33.1*pixel_factor, 8.8 * pixel_factor);
+   window.draw(text);
+   text.setString("SCORE");   
+   text.setPosition(33.5*pixel_factor, 9.8 * pixel_factor);
+   window.draw(text);
+   k = to_string(player.Get_playing_server().players[right].score);
+   text.setString(k);   
+   text.setPosition(33.1*pixel_factor, 10.8 * pixel_factor);
    window.draw(text);
 }
 void Display::DrawTitleScreen()

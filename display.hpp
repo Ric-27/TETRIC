@@ -63,6 +63,7 @@ public:
     void Draw_Lobby();
     void DrawGame(vector<string>);
     void DrawPlayers(vector<string>,int,vector<string>,int,vector<string>,int);
+    void DrawPlayers_Guest();
     void DrawNext(vector<string>);
     void DrawPoints(int, int, int);
     void DrawGameOver(int, int, int);

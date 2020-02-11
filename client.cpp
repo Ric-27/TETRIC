@@ -8,11 +8,13 @@ Client::Client(/* args */)
     for (unsigned i = 0; i < max_players; i++)
     {
         playing_server.players[i].game.resize(matrix_size);
+        playing_server.players[i].name = "";
+        playing_server.players[i].ready = false;
+        playing_server.players[i].score = 0;
         for (int j = 0; j < matrix_size; j++)
         {
             playing_server.players[i].game[j] = "";
-        }
-        
+        }        
     }
 }
 
@@ -103,6 +105,7 @@ void Client::Fill_server_list()
 
 //Connect to a specific game server from the available list:
 void Client::Selected_Server(const unsigned argServer, status_type& argStatus, Logic& argGame){
+    cout << playing_server.players[0].game.size();
     //Checking that the selected server is in the list:
     if(argServer > server_list.size()){
         argStatus = error;
@@ -168,7 +171,8 @@ void Client::Selected_Server(const unsigned argServer, status_type& argStatus, L
                         packet_recv >> player_status;
                         cout << player_status << endl;
                         cout << "here 0" << endl;
-                        playing_server.players[i] = player_info{"", player_status, player_name};
+                        playing_server.players[i].name = player_name;
+                        playing_server.players[i].ready = player_status;
                         cout << "here 1" << endl;
                         /*
                         string value;
@@ -186,6 +190,7 @@ void Client::Selected_Server(const unsigned argServer, status_type& argStatus, L
                     }
                     argStatus = connected;
                     std::cout << "Connected to the Server " << playing_server.address << endl;
+                    cout << playing_server.players[0].game.size();
                     return;
                 }
             }
@@ -209,7 +214,7 @@ void Client::Lobby_Communication(status_type& argStatus){
 
     string player_name;
     while(true){
-        std::cout << "loop" << endl;
+        //std::cout << "loop" << endl;
          //Check if there is a message:
         if (socket.receive(packet_recv, sender, port) == Socket::Done)
         {
@@ -256,13 +261,16 @@ void Client::Lobby_Communication(status_type& argStatus){
             }
             //Check if the message is of new client info:
             case s2c_new_player_info:
-                //std::cout << "new player" << endl; 
+                std::cout << "new player" << endl; 
                 Uint32 number_of_players;
                 packet_recv >> number_of_players;
+                playing_server.number_of_players_connected = number_of_players;
+                std::cout << number_of_players << endl; 
                 for(unsigned i = 0; i < number_of_players; i ++){
                     player_info player_data;
                     packet_recv >> player_data;
                     playing_server.players[i] = player_data;
+                    cout << player_data.name << endl;
                     /*
                     for(unsigned j = 0; j < width*(height+amount_of_pixels); j++)
                     {
@@ -330,7 +338,6 @@ void Client::ready(bool argReady){
 
 void Client::Game_Communication(status_type& argStatus, Logic& argMatrix){
     Send_Game(argMatrix);
-    cout << "client listening" << endl;
     argStatus = changednt;
     socket.setBlocking(false);
     
@@ -341,15 +348,21 @@ void Client::Game_Communication(status_type& argStatus, Logic& argMatrix){
     chrono::time_point<chrono::system_clock> start = chrono::system_clock::now();
     chrono::duration<double> elapsed_seconds;
     
+    //cout << "client listening" << endl;
     while(true){
+        
         elapsed_seconds = chrono::system_clock::now() - start;
         if(elapsed_seconds.count() >= update_time){
+            //cout << "time passed" << endl;
             start = chrono::system_clock::now();
             Send_Game(argMatrix);
-            //cout << "game sending" << endl;
         }
+        
         //Check if there is a message:
-        if (socket.receive(packet_recv, sender, port) == Socket::Done){
+        
+        if (socket.receive(packet_recv, sender, port) == Socket::Done)
+        {
+            //cout << "recibi" << endl;
             //Get the buffer information:
             Uint32 infotype_value;
 
@@ -358,7 +371,7 @@ void Client::Game_Communication(status_type& argStatus, Logic& argMatrix){
             switch ((unsigned)infotype_value)
             {
                 case s2c_game_update:
-                    cout << "cthere 1" << endl;
+                    //cout << "cthere 1" << endl;
                     for(unsigned i = 0; i < playing_server.number_of_players_connected; i ++){
                         packet_recv >> playing_server.players[i].name;
                         packet_recv >> playing_server.players[i].score;
@@ -369,7 +382,7 @@ void Client::Game_Communication(status_type& argStatus, Logic& argMatrix){
                             playing_server.players[i].game[j] = value;
                         }                 
                     }
-                    cout << "cthere 2" << endl;
+                    //cout << "cthere 2" << endl;
                     argStatus = changed;
                     break;
                 default:
@@ -380,7 +393,7 @@ void Client::Game_Communication(status_type& argStatus, Logic& argMatrix){
 }
 
 void Client::Send_Game(Logic& argGame){
-    cout << "chere 1" << endl;
+    //cout << "sending my game:";
     //Filling send buffer:
     Packet packet_send;
     
@@ -388,16 +401,15 @@ void Client::Send_Game(Logic& argGame){
     packet_send << name;
     packet_send << argGame.getScore();
 
-    //cout << "tamaño enviado: " << argGame.getMatrix().size() << endl;
     for(unsigned i = 0; i < argGame.getMatrix().size(); i ++){
         packet_send << argGame.getMatrix()[i];
     }
-    cout << "chere 2" << endl;
     //Sending board data message: 
     if (socket.send(packet_send, playing_server.address, server_port) != sf::Socket::Done)
     {
         cout << "Client: Send error" << endl;
-    }   
+    }
+    //cout << " ok" << endl;
 }
 
 Client::~Client()
