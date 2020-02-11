@@ -12,7 +12,7 @@ Server::Server():
     for (unsigned i = 0; i < max_players; i++)
     {
         players[i].game.resize(matrix_size);
-        players[i].name = "available";
+        players[i].name = "";
         players[i].ready = true;
         for (int j = 0; j < matrix_size; j++)
         {

@@ -29,7 +29,7 @@ const int matrix_size = width*(height+amount_of_pixels);
 
 // SCREEN //
 //dimension
-const int px_factor = 15;
+const int px_factor = 40;
 const int screen_height = 22;
 const int screen_width = 39;
 //color
