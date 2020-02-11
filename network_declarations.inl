@@ -13,6 +13,8 @@ const unsigned short search_time = 10;
 const unsigned short connection_time = 5;
 const double update_time = 0.2;
 
+const int max_players = 4;
+
 enum info_type{
     c2s_info_request,
     c2s_connection_request,

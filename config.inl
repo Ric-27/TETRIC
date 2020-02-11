@@ -10,6 +10,8 @@ using namespace std;
 // TETROMINOS //
 const int amount_of_pixels = 4;
 const int variety = 8;
+//const unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+const unsigned seed = 14;
 //colors
 const string tetromino_o_color = "0.255.0";
 const string tetromino_i_color = "255.0.0";
@@ -23,9 +25,11 @@ const string tetromino_legendary = "138.43.226";
 const int width = 10;
 const int height = 20;
 
+const int matrix_size = width*(height+amount_of_pixels);
+
 // SCREEN //
 //dimension
-const int px_factor = 20;
+const int px_factor = 15;
 const int screen_height = 22;
 const int screen_width = 39;
 //color
@@ -47,6 +51,6 @@ const int min_speed = 10;
 const int rows_to_level = 6;
 
 //spawn special
-const int count_spawn_special = 15;
+const int count_spawn_special = 10;
 
 #endif
