@@ -42,9 +42,9 @@ const int score_text_color = 255;
 
 // GAME //
 //speed
-const int initial_speed = 60;
+const int initial_speed = 50;
 const int step_speed = 10;
-const int min_speed = 20;
+const int min_speed = 10;
 
 //level-up
 const int rows_to_level = 6;
