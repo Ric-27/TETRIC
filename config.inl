@@ -43,7 +43,7 @@ const int score_text_color = 255;
 
 // GAME //
 //speed
-const int initial_speed = 100;
+const int initial_speed = 50;
 const int step_speed = 15;
 const int min_speed = 10;
 
