@@ -243,7 +243,10 @@ void Client::Lobby_Communication(status_type& argStatus){
                 for(unsigned i = 0; i < number_of_players; i ++){
                     player_info player_data;
                     packet_recv >> player_data;
-                    playing_server.players[i] = player_data;
+                    playing_server.players[i].address = player_data.address;
+                    playing_server.players[i].ready = player_data.ready;
+                    playing_server.players[i].name = player_data.name;
+                    playing_server.players[i].score = player_data.score;
                 }
                 argStatus = changed;
             break;

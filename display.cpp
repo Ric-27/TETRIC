@@ -1058,7 +1058,7 @@ void Display::DrawPlayers_Guest(){
          break;
       }      
    }
-   my_pos = 0;
+   //my_pos = 0;
    switch (my_pos)
    {
       case 1:
