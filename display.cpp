@@ -23,6 +23,7 @@ Display::Display():
    networking = nullptr;
    thread_runing = false;
    namecheck = false;
+   my_pos = 0;
 }
 void Display::Run()
 {
@@ -285,6 +286,7 @@ void Display::Events()
                      networking = nullptr;
                      thread_runing = false;
                      namecheck = false;
+                     my_pos = 0;
                      game.CleanUp();              
                      break;
 
@@ -997,7 +999,7 @@ void Display::DrawPlayers_Guest(){
    short left = 0;
    short middle = 0;
    short right = 0;
-   short my_pos = 0;
+   
    string k;
    sf::RectangleShape pixel(sf::Vector2f(4*pixel_factor, 3*pixel_factor));
    pixel.setPosition(21*pixel_factor, 9*pixel_factor);
@@ -1036,8 +1038,9 @@ void Display::DrawPlayers_Guest(){
          }      
       }
       namecheck = true;
+      cout << "my position: "<<my_pos << endl;
    }
-   cout << "my position: "<<my_pos << endl;
+   
    switch (my_pos)
    {
       case 1:

@@ -29,6 +29,7 @@ private:
     bool colorAug;
 
     bool namecheck;
+    short my_pos = 0;
 
     bool thread_runing;
     Thread* networking;
