@@ -1044,7 +1044,7 @@ void Display::DrawPlayers_Guest(){
    window.draw(text);
    
    vector<player_info>::iterator it = find(player.Get_playing_server().players.begin(), player.Get_playing_server().players.end(), player_info{"", false, player_Name});
-   for (unsigned i = 1; i < max_players; i++)
+   for (unsigned i = 0; i < player.Get_playing_server().players.size(); i++)
    {
       if (player.Get_playing_server().players[i].name == (*it).name)
       {
@@ -1069,8 +1069,8 @@ void Display::DrawPlayers_Guest(){
          right = 2;
          break;        
       default:
-         middle = 0;
-         right = 0;
+         middle = 3;
+         right = 3;
          break;
    }
    for (int j = amount_of_pixels; j < ySize; j++)
