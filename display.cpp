@@ -22,6 +22,7 @@ Display::Display():
    my_status = changednt;
    networking = nullptr;
    thread_runing = false;
+   namecheck = false;
 }
 void Display::Run()
 {
@@ -272,6 +273,18 @@ void Display::Events()
                   case sf::Keyboard::R: //Restart
                      //networking->terminate();
                      level = 0;
+                     sleepCont = 0;
+                     colorChanging = 0;
+                     colorAug = true;
+                     counterGravity = 0;
+                     
+                     server_choosen = 0;
+                     reload = false;
+                     display_ready = false;
+                     my_status = changednt;
+                     networking = nullptr;
+                     thread_runing = false;
+                     namecheck = false;
                      game.CleanUp();              
                      break;
 
@@ -1008,6 +1021,7 @@ void Display::DrawPlayers_Guest(){
    text.setFont(font);
    text.setCharacterSize(local_PF * 2.5);
    text.setFillColor(sf::Color::White);
+
    if(!namecheck)
    {
       vector<player_info>::iterator it = find(player.Get_playing_server().players.begin(), player.Get_playing_server().players.end(), player_info{"", false, player_Name});
