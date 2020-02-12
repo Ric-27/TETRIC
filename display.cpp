@@ -980,11 +980,11 @@ void Display::DrawPlayers(vector<string> argMatrixP1,int argScoreP1,vector<strin
    window.draw(text);
 }
 void Display::DrawPlayers_Guest(){
-   vector<player_info>::iterator it = find(player.Get_playing_server().players.begin(), player.Get_playing_server().players.end(), player_info{"", false, player_Name});
    int local_PF = pixel_factor / 2.5;
    short middle = 0;
    short right = 0;
    short my_pos = 0;
+   string k;
    sf::RectangleShape pixel(sf::Vector2f(4*pixel_factor, 3*pixel_factor));
    pixel.setPosition(21*pixel_factor, 9*pixel_factor);
    pixel.setFillColor(sf::Color(20,20,20,255));            
@@ -1007,7 +1007,6 @@ void Display::DrawPlayers_Guest(){
    text.setFont(font);
    text.setCharacterSize(local_PF * 2.5);
    text.setFillColor(sf::Color::White);
-   string k;
    for (int j = amount_of_pixels; j < ySize; j++)
    {
       for (int i = 0; i < xSize; i++)
@@ -1030,6 +1029,7 @@ void Display::DrawPlayers_Guest(){
          window.draw(pixel);            
       }        
    }
+
    text.setString(player.Get_playing_server().players[0].name);   
    text.setPosition(21.1*pixel_factor, 8.8 * pixel_factor);
    window.draw(text);
@@ -1043,6 +1043,7 @@ void Display::DrawPlayers_Guest(){
    text.setPosition(21.1*pixel_factor, 10.8 * pixel_factor);
    window.draw(text);
    
+   vector<player_info>::iterator it = find(player.Get_playing_server().players.begin(), player.Get_playing_server().players.end(), player_info{"", false, player_Name});
    for (unsigned i = 1; i < max_players; i++)
    {
       if (player.Get_playing_server().players[i].name == (*it).name)
@@ -1052,6 +1053,7 @@ void Display::DrawPlayers_Guest(){
          break;
       }      
    }
+   my_pos = 0;
    switch (my_pos)
    {
       case 1:
@@ -1067,6 +1069,8 @@ void Display::DrawPlayers_Guest(){
          right = 2;
          break;        
       default:
+         middle = 0;
+         right = 0;
          break;
    }
    for (int j = amount_of_pixels; j < ySize; j++)
@@ -1075,7 +1079,7 @@ void Display::DrawPlayers_Guest(){
       {
          sf::RectangleShape pixel(sf::Vector2f(local_PF, local_PF));
          pixel.setPosition(((i + 1) *local_PF)+26.6*pixel_factor, ((j - amount_of_pixels)*local_PF)+1*pixel_factor);
-         string k = player.Get_playing_server().players[middle].game[i + xSize * j];
+         k = player.Get_playing_server().players[middle].game[i + xSize * j];
          if (k.length() > 0)
          {
             int posp1 = k.find('.');
@@ -1108,7 +1112,7 @@ void Display::DrawPlayers_Guest(){
       {
          sf::RectangleShape pixel(sf::Vector2f(local_PF, local_PF));
          pixel.setPosition(((i + 1) *local_PF)+32.6*pixel_factor, ((j - amount_of_pixels)*local_PF)+1*pixel_factor);
-         string k = player.Get_playing_server().players[right].game[i + xSize * j];
+         k = player.Get_playing_server().players[right].game[i + xSize * j];
          if (k.length() > 0)
          {
             int posp1 = k.find('.');
