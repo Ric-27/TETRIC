@@ -28,6 +28,8 @@ private:
     int colorChanging;
     bool colorAug;
 
+    bool namecheck;
+
     bool thread_runing;
     Thread* networking;
 

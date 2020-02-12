@@ -1008,18 +1008,21 @@ void Display::DrawPlayers_Guest(){
    text.setFont(font);
    text.setCharacterSize(local_PF * 2.5);
    text.setFillColor(sf::Color::White);
- 
-   vector<player_info>::iterator it = find(player.Get_playing_server().players.begin(), player.Get_playing_server().players.end(), player_info{"", false, player_Name});
-   for (unsigned i = 0; i < player.Get_playing_server().players.size(); i++)
+   if(!namecheck)
    {
-      cout << "names" << endl;
-      cout << player.Get_playing_server().players[i].name << endl;
-      if (player.Get_playing_server().players[i].name == (*it).name)
+      vector<player_info>::iterator it = find(player.Get_playing_server().players.begin(), player.Get_playing_server().players.end(), player_info{"", false, player_Name});
+      for (unsigned i = 0; i < player.Get_playing_server().players.size(); i++)
       {
-         my_pos = i;
-         cout << "my position: "<<my_pos << endl;
-         break;
-      }      
+         cout << "names" << endl;
+         cout << player.Get_playing_server().players[i].name << endl;
+         if (player.Get_playing_server().players[i].name == (*it).name)
+         {
+            my_pos = i;
+            cout << "my position: "<<my_pos << endl;
+            break;
+         }      
+      }
+      namecheck = true;
    }
 
    switch (my_pos)
