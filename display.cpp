@@ -1049,7 +1049,7 @@ void Display::DrawPlayers_Guest(){
       if (player.Get_playing_server().players[i].name == (*it).name)
       {
          my_pos = i;
-         cout << my_pos << endl;
+         cout << "my position: "<<my_pos << endl;
          break;
       }      
    }
