@@ -483,7 +483,7 @@ void Display::Events()
 }
 void Display::Writing()
 {
-   if (event.type == sf::Event::KeyPressed && player_Name.length() < 10) {
+   if (event.type == sf::Event::KeyPressed && player_Name.length() < 5) {
       switch (event.key.code)
       {
       case sf::Keyboard::Q:
@@ -1008,18 +1008,12 @@ void Display::DrawPlayers_Guest(){
    text.setFont(font);
    text.setCharacterSize(local_PF * 2.5);
    text.setFillColor(sf::Color::White);
-   
-   /*
-   cout << "sizes" << endl;
-   cout << player.Get_playing_server().players[0].game.size() << endl;
-   cout << player.Get_playing_server().players[1].game.size() << endl;
-   cout << player.Get_playing_server().players[2].game.size() << endl;
-   cout << player.Get_playing_server().players[3].game.size() << endl;
-   */ 
  
    vector<player_info>::iterator it = find(player.Get_playing_server().players.begin(), player.Get_playing_server().players.end(), player_info{"", false, player_Name});
    for (unsigned i = 0; i < player.Get_playing_server().players.size(); i++)
    {
+      cout << "names" << endl;
+      cout << player.Get_playing_server().players[i].name << endl;
       if (player.Get_playing_server().players[i].name == (*it).name)
       {
          my_pos = i;
