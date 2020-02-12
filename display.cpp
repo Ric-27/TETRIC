@@ -121,7 +121,6 @@ void Display::Run()
             break;
          case 10: //playing multiplayer as host
             if(!thread_runing){
-               cout << "thread launch server" << endl;
                networking->terminate();
                networking = new Thread([&] () {host.Game_Communication(my_status,game);});
                networking->launch();
@@ -147,7 +146,6 @@ void Display::Run()
             break;
          case 11: //playing multiplayer as client
             if(!thread_runing){
-               cout << "thread launch" << endl;
                networking->terminate();
                networking = new Thread([&] () {player.Game_Communication(my_status,game);});
                networking->launch();
@@ -157,7 +155,7 @@ void Display::Run()
             DrawBackground();
             DrawGame(game.getMatrix());
             Draw_Legend_MP();
-            DrawPlayers_Guest();
+            //DrawPlayers_Guest();
             DrawNext(game.getNext());
             DrawPoints(game.getScore(),game.getRows(),game.getLevel());
             if (level != game.getLevel())
@@ -982,7 +980,6 @@ void Display::DrawPlayers(vector<string> argMatrixP1,int argScoreP1,vector<strin
    window.draw(text);
 }
 void Display::DrawPlayers_Guest(){
-   //player.Get_playing_server().players[0].game
    vector<player_info>::iterator it = find(player.Get_playing_server().players.begin(), player.Get_playing_server().players.end(), player_info{"", false, player_Name});
    int local_PF = pixel_factor / 2.5;
    short middle = 0;

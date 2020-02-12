@@ -357,7 +357,6 @@ void Logic::CleanUp(){
     newTetromino();    
 }
 void Logic::Overlay(){
-    //cout << "overlay" << endl;
     prev_overlay = curr_overlay;
     curr_overlay = activePiece.getPixels();
     bool active = true;

@@ -105,7 +105,6 @@ void Client::Fill_server_list()
 
 //Connect to a specific game server from the available list:
 void Client::Selected_Server(const unsigned argServer, status_type& argStatus, Logic& argGame){
-    cout << playing_server.players[0].game.size();
     //Checking that the selected server is in the list:
     if(argServer > server_list.size()){
         argStatus = error;
@@ -140,7 +139,6 @@ void Client::Selected_Server(const unsigned argServer, status_type& argStatus, L
         //Check if there is a message:
         if (socket.receive(packet_recv, sender, port) == Socket::Done)
         {
-            cout << "recibi" << endl;
             //Checking that the address of the sender 
             //is the same as that of the selected server
             if(sender == server_list[argServer - 1].address){
@@ -159,38 +157,19 @@ void Client::Selected_Server(const unsigned argServer, status_type& argStatus, L
                     playing_server.address = server_list[argServer - 1].address;
 
                     packet_recv >> playing_server.number_of_players_connected;
-                    cout << playing_server.number_of_players_connected << endl;
                 
                     for(unsigned i = 0; i < playing_server.number_of_players_connected; i ++){
                         string player_name;
                         bool player_status;
 
                         packet_recv >> player_name;
-                        cout << player_name << endl;
 
                         packet_recv >> player_status;
-                        cout << player_status << endl;
-                        cout << "here 0" << endl;
                         playing_server.players[i].name = player_name;
                         playing_server.players[i].ready = player_status;
-                        cout << "here 1" << endl;
-                        /*
-                        string value;
-                        for (int j = 0; j < matrix_size; j++)
-                        {
-                            packet_recv >> value;
-                            playing_server.players[i].game[j] = value;
-                            cout << "valor recibido: " << value;
-                            cout << " -- valor en el vector: " << playing_server.players[i].game[j];
-                            cout << endl;
-                        }
-                        */
-                        cout << "here 2" << endl;
-                        cout << endl;
                     }
                     argStatus = connected;
                     std::cout << "Connected to the Server " << playing_server.address << endl;
-                    cout << playing_server.players[0].game.size();
                     return;
                 }
             }
@@ -204,7 +183,6 @@ void Client::Selected_Server(const unsigned argServer, status_type& argStatus, L
 }
 
 void Client::Lobby_Communication(status_type& argStatus){
-    std::cout << "lobby" << endl;
     argStatus = changednt;
     socket.setBlocking(false);
     
@@ -214,7 +192,6 @@ void Client::Lobby_Communication(status_type& argStatus){
 
     string player_name;
     while(true){
-        //std::cout << "loop" << endl;
          //Check if there is a message:
         if (socket.receive(packet_recv, sender, port) == Socket::Done)
         {
@@ -222,7 +199,6 @@ void Client::Lobby_Communication(status_type& argStatus){
             Uint32 infotype_value;
             //Get the buffer information:
             packet_recv >> infotype_value;
-            std::cout << infotype_value << endl;
             switch (infotype_value)
             {
             case s2c_ready_ok:
@@ -261,24 +237,13 @@ void Client::Lobby_Communication(status_type& argStatus){
             }
             //Check if the message is of new client info:
             case s2c_new_player_info:
-                std::cout << "new player" << endl; 
                 Uint32 number_of_players;
                 packet_recv >> number_of_players;
                 playing_server.number_of_players_connected = number_of_players;
-                std::cout << number_of_players << endl; 
                 for(unsigned i = 0; i < number_of_players; i ++){
                     player_info player_data;
                     packet_recv >> player_data;
                     playing_server.players[i] = player_data;
-                    cout << player_data.name << endl;
-                    /*
-                    for(unsigned j = 0; j < width*(height+amount_of_pixels); j++)
-                    {
-                            string value = "";
-                            packet_recv >> value;
-                            playing_server.players[i].game[j] = (value);
-                    }
-                    */
                 }
                 argStatus = changed;
             break;
@@ -353,7 +318,6 @@ void Client::Game_Communication(status_type& argStatus, Logic& argMatrix){
         
         elapsed_seconds = chrono::system_clock::now() - start;
         if(elapsed_seconds.count() >= update_time){
-            //cout << "time passed" << endl;
             start = chrono::system_clock::now();
             Send_Game(argMatrix);
         }
@@ -362,7 +326,6 @@ void Client::Game_Communication(status_type& argStatus, Logic& argMatrix){
         
         if (socket.receive(packet_recv, sender, port) == Socket::Done)
         {
-            //cout << "recibi" << endl;
             //Get the buffer information:
             Uint32 infotype_value;
 
@@ -371,7 +334,6 @@ void Client::Game_Communication(status_type& argStatus, Logic& argMatrix){
             switch ((unsigned)infotype_value)
             {
                 case s2c_game_update:
-                    //cout << "cthere 1" << endl;
                     for(unsigned i = 0; i < playing_server.number_of_players_connected; i ++){
                         packet_recv >> playing_server.players[i].name;
                         packet_recv >> playing_server.players[i].score;
@@ -382,7 +344,6 @@ void Client::Game_Communication(status_type& argStatus, Logic& argMatrix){
                             playing_server.players[i].game[j] = value;
                         }                 
                     }
-                    //cout << "cthere 2" << endl;
                     argStatus = changed;
                     break;
                 default:
@@ -393,7 +354,6 @@ void Client::Game_Communication(status_type& argStatus, Logic& argMatrix){
 }
 
 void Client::Send_Game(Logic& argGame){
-    //cout << "sending my game:";
     //Filling send buffer:
     Packet packet_send;
     
@@ -409,7 +369,6 @@ void Client::Send_Game(Logic& argGame){
     {
         cout << "Client: Send error" << endl;
     }
-    //cout << " ok" << endl;
 }
 
 Client::~Client()
