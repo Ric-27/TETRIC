@@ -155,7 +155,7 @@ void Display::Run()
             DrawBackground();
             DrawGame(game.getMatrix());
             Draw_Legend_MP();
-            //DrawPlayers_Guest();
+            DrawPlayers_Guest();
             DrawNext(game.getNext());
             DrawPoints(game.getScore(),game.getRows(),game.getLevel());
             if (level != game.getLevel())
