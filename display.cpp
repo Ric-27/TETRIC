@@ -1029,6 +1029,11 @@ void Display::DrawPlayers_Guest(){
          window.draw(pixel);            
       }        
    }
+   cout << "sizes" << endl;
+   cout << player.Get_playing_server().players[0].game.size() << endl;
+   cout << player.Get_playing_server().players[1].game.size() << endl;
+   cout << player.Get_playing_server().players[2].game.size() << endl;
+   cout << player.Get_playing_server().players[3].game.size() << endl;
 
    text.setString(player.Get_playing_server().players[0].name);   
    text.setPosition(21.1*pixel_factor, 8.8 * pixel_factor);
