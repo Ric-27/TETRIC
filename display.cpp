@@ -1069,8 +1069,8 @@ void Display::DrawPlayers_Guest(){
          right = 2;
          break;        
       default:
-         middle = 3;
-         right = 3;
+         middle = 2;
+         right = 2;
          break;
    }
    for (int j = amount_of_pixels; j < ySize; j++)
