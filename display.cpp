@@ -1024,21 +1024,20 @@ void Display::DrawPlayers_Guest(){
 
    if(!namecheck)
    {
-      vector<player_info>::iterator it = find(player.Get_playing_server().players.begin(), player.Get_playing_server().players.end(), player_info{"", false, player_Name});
+      cout << "names" << endl;
+      //vector<player_info>::iterator it = find(player.Get_playing_server().players.begin(), player.Get_playing_server().players.end(), player_info{"", false, player_Name});
       for (unsigned i = 0; i < player.Get_playing_server().players.size(); i++)
       {
-         cout << "names" << endl;
          cout << player.Get_playing_server().players[i].name << endl;
-         if (player.Get_playing_server().players[i].name == (*it).name)
+         if (player.Get_playing_server().players[i].name == player_Name)
          {
             my_pos = i;
-            cout << "my position: "<<my_pos << endl;
             break;
          }      
       }
       namecheck = true;
    }
-
+   cout << "my position: "<<my_pos << endl;
    switch (my_pos)
    {
       case 1:
