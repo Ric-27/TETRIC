@@ -981,6 +981,7 @@ void Display::DrawPlayers(vector<string> argMatrixP1,int argScoreP1,vector<strin
 }
 void Display::DrawPlayers_Guest(){
    int local_PF = pixel_factor / 2.5;
+   short left = 0;
    short middle = 0;
    short right = 0;
    short my_pos = 0;
@@ -1007,13 +1008,54 @@ void Display::DrawPlayers_Guest(){
    text.setFont(font);
    text.setCharacterSize(local_PF * 2.5);
    text.setFillColor(sf::Color::White);
+   
+   /*
+   cout << "sizes" << endl;
+   cout << player.Get_playing_server().players[0].game.size() << endl;
+   cout << player.Get_playing_server().players[1].game.size() << endl;
+   cout << player.Get_playing_server().players[2].game.size() << endl;
+   cout << player.Get_playing_server().players[3].game.size() << endl;
+   */ 
+ 
+   vector<player_info>::iterator it = find(player.Get_playing_server().players.begin(), player.Get_playing_server().players.end(), player_info{"", false, player_Name});
+   for (unsigned i = 0; i < player.Get_playing_server().players.size(); i++)
+   {
+      if (player.Get_playing_server().players[i].name == (*it).name)
+      {
+         my_pos = i;
+         cout << "my position: "<<my_pos << endl;
+         break;
+      }      
+   }
+
+   switch (my_pos)
+   {
+      case 1:
+         left = 0;
+         middle = 2;
+         right = 3;
+         break;
+      case 2:
+         left = 0;
+         middle = 1;
+         right = 3;
+         break;
+      case 3:
+         left = 0;
+         middle = 1;
+         right = 2;
+         break;        
+      default:
+         break;
+   }
+
    for (int j = amount_of_pixels; j < ySize; j++)
    {
       for (int i = 0; i < xSize; i++)
       {
          sf::RectangleShape pixel(sf::Vector2f(local_PF, local_PF));
          pixel.setPosition(((i + 1) *local_PF)+20.6*pixel_factor, ((j - amount_of_pixels)*local_PF)+1*pixel_factor);
-         string k = player.Get_playing_server().players[0].game[i + xSize * j];
+         string k = player.Get_playing_server().players[left].game[i + xSize * j];
          if (k.length() > 0)
          {
             int posp1 = k.find('.');
@@ -1029,13 +1071,7 @@ void Display::DrawPlayers_Guest(){
          window.draw(pixel);            
       }        
    }
-   cout << "sizes" << endl;
-   cout << player.Get_playing_server().players[0].game.size() << endl;
-   cout << player.Get_playing_server().players[1].game.size() << endl;
-   cout << player.Get_playing_server().players[2].game.size() << endl;
-   cout << player.Get_playing_server().players[3].game.size() << endl;
-
-   text.setString(player.Get_playing_server().players[0].name);   
+   text.setString(player.Get_playing_server().players[left].name);   
    text.setPosition(21.1*pixel_factor, 8.8 * pixel_factor);
    window.draw(text);
 
@@ -1043,41 +1079,12 @@ void Display::DrawPlayers_Guest(){
    text.setPosition(21.5*pixel_factor, 9.8 * pixel_factor);
    window.draw(text);
 
-   k = to_string(player.Get_playing_server().players[0].score);
+   k = to_string(player.Get_playing_server().players[left].score);
    text.setString(k);   
    text.setPosition(21.1*pixel_factor, 10.8 * pixel_factor);
    window.draw(text);
-   
-   vector<player_info>::iterator it = find(player.Get_playing_server().players.begin(), player.Get_playing_server().players.end(), player_info{"", false, player_Name});
-   for (unsigned i = 0; i < player.Get_playing_server().players.size(); i++)
-   {
-      if (player.Get_playing_server().players[i].name == (*it).name)
-      {
-         my_pos = i;
-         cout << "my position: "<<my_pos << endl;
-         break;
-      }      
-   }
-   //my_pos = 0;
-   switch (my_pos)
-   {
-      case 1:
-         middle = 2;
-         right = 3;
-         break;
-      case 2:
-         middle = 1;
-         right = 3;
-         break;
-      case 3:
-         middle = 1;
-         right = 2;
-         break;        
-      default:
-         middle = 2;
-         right = 2;
-         break;
-   }
+
+
    for (int j = amount_of_pixels; j < ySize; j++)
    {
       for (int i = 0; i < xSize; i++)
@@ -1100,12 +1107,16 @@ void Display::DrawPlayers_Guest(){
          window.draw(pixel);            
       }    
    }
+
+
    text.setString(player.Get_playing_server().players[middle].name);   
    text.setPosition(27.1*pixel_factor, 8.8 * pixel_factor);
    window.draw(text);
+
    text.setString("SCORE");   
    text.setPosition(27.5*pixel_factor, 9.8 * pixel_factor);
    window.draw(text);
+
    k = to_string(player.Get_playing_server().players[middle].score);
    text.setString(k);   
    text.setPosition(27.1*pixel_factor, 10.8 * pixel_factor);
@@ -1133,12 +1144,15 @@ void Display::DrawPlayers_Guest(){
          window.draw(pixel);            
       }        
    }
+
    text.setString(player.Get_playing_server().players[right].name);   
    text.setPosition(33.1*pixel_factor, 8.8 * pixel_factor);
    window.draw(text);
+
    text.setString("SCORE");   
    text.setPosition(33.5*pixel_factor, 9.8 * pixel_factor);
    window.draw(text);
+
    k = to_string(player.Get_playing_server().players[right].score);
    text.setString(k);   
    text.setPosition(33.1*pixel_factor, 10.8 * pixel_factor);
