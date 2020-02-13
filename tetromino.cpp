@@ -13,12 +13,13 @@ Tetromino::Tetromino(Pixel coorZero,int argId)
 {
     active = true;
     pixels.resize(amount_of_pixels);
+    int random = argId;
     for (unsigned i = 0; i < pixels.size(); i++)
     {
         pixels[i].setX(-1);
         pixels[i].setY(-1);        
     }
-    int random = argId;
+    
     if (random < 0)
     {
         random = abs(random);
@@ -31,6 +32,7 @@ Tetromino::Tetromino(Pixel coorZero,int argId)
             random = distribution(generator);
         }
     }
+    
     //cout << "piece: " << random << endl;
     switch (random)
     {

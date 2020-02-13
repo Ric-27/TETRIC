@@ -652,7 +652,6 @@ void Display::Draw_Loading()
 }
 void Display::Draw_Legend_SP()
 {
-   ChangeColor();
    sf::Font font;
    if (!font.loadFromFile("font.ttf"))
    {
@@ -660,7 +659,7 @@ void Display::Draw_Legend_SP()
    }
    sf::Text text;
    text.setFont(font);
-   text.setFillColor(sf::Color(colorChanging,colorChanging,colorChanging,255));
+   text.setFillColor(sf::Color(legend_text_color,legend_text_color,legend_text_color,255));
 
    text.setString("TETRIC");
    text.setCharacterSize(pixel_factor * 6);
